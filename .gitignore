@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+pnpm-debug.log*
+
+apps/*/node_modules/
+apps/*/dist/
+packages/*/node_modules/
+packages/*/dist/
+
+.env
+.env.*
+!.env.example
