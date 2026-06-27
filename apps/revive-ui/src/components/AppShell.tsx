@@ -390,6 +390,7 @@ export function AppShell() {
     projects.length === 1 && projects[0]?.id === 'default'
       ? '/project/overview'
       : '/projects'
+  const apiOffline = Boolean(projectsQuery.error) && projects.length === 0
 
   const outletContext: AppShellOutletContext = {
     activeProject,
@@ -467,10 +468,24 @@ export function AppShell() {
                     <InputLabel id="project-select-label">Project</InputLabel>
                     <Select
                       labelId="project-select-label"
-                      value={activeProjectId}
+                      value={apiOffline ? '__offline__' : activeProjectId}
                       label="Project"
+                      disabled={apiOffline || projects.length === 0}
                       onChange={(event) => setActiveProjectId(event.target.value)}
+                      renderValue={(value) => {
+                        if (value === '__offline__') {
+                          return 'API offline'
+                        }
+
+                        return (
+                          projects.find((project) => project.id === value)?.name ??
+                          'Select a project'
+                        )
+                      }}
                     >
+                      {apiOffline ? (
+                        <MenuItem value="__offline__">API offline</MenuItem>
+                      ) : null}
                       {projects.map((project) => (
                         <MenuItem key={project.id} value={project.id}>
                           {project.name}
@@ -483,6 +498,7 @@ export function AppShell() {
                     <IconButton
                       className="theme-toggle"
                       color="inherit"
+                      disabled={apiOffline}
                       onClick={() => setIsCreateDialogOpen(true)}
                     >
                       <AddRounded />
@@ -505,9 +521,17 @@ export function AppShell() {
             </Paper>
 
             {isBusy ? <LinearProgress /> : null}
-            {projectsQuery.error ? <Alert severity="error">{projectsQuery.error.message}</Alert> : null}
-
-            <Outlet context={outletContext} />
+            {apiOffline ? (
+              <ApiOfflinePage
+                message={projectsQuery.error?.message ?? 'The API is currently unavailable.'}
+                onRetry={() => void projectsQuery.refetch()}
+              />
+            ) : (
+              <>
+                {projectsQuery.error ? <Alert severity="error">{projectsQuery.error.message}</Alert> : null}
+                <Outlet context={outletContext} />
+              </>
+            )}
           </Stack>
         </Container>
 
@@ -562,6 +586,42 @@ export function AppShell() {
 
 function useReviveAppContext() {
   return useOutletContext<AppShellOutletContext>()
+}
+
+function ApiOfflinePage({
+  message,
+  onRetry,
+}: {
+  message: string
+  onRetry: () => void
+}) {
+  return (
+    <Stack spacing={3}>
+      <PageIntro
+        title="API Offline"
+        subtitle="REVIVE cannot reach the backend service right now."
+      />
+
+      <Paper className="panel panel-full offline-panel">
+        <Stack spacing={2}>
+          <Alert severity="error">
+            {message}
+          </Alert>
+          <Typography color="text.secondary">
+            Check that the REVIVE API is running and that its MongoDB connection is available, then retry.
+          </Typography>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+            <Button variant="contained" onClick={onRetry}>
+              Retry connection
+            </Button>
+            <Button component={Link} to="/changelog" variant="outlined">
+              View change log
+            </Button>
+          </Stack>
+        </Stack>
+      </Paper>
+    </Stack>
+  )
 }
 
 export function ProjectsPageRoute() {
@@ -1002,7 +1062,7 @@ function VideosPage({
         <PanelTitle
           icon={<SearchRounded />}
           title="Source Video Library"
-          subtitle="Real source videos from the connected Rev environment."
+          subtitle="Source videos from the connected Rev environment."
         />
         <Stack spacing={2}>
           <TextField

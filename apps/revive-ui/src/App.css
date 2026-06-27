@@ -104,6 +104,8 @@
 
 .project-select {
   min-width: 220px;
+  width: 220px;
+  flex: 0 0 220px;
 }
 
 .project-card {
@@ -141,6 +143,10 @@
 
 .project-card-actions {
   min-height: 40px;
+}
+
+.offline-panel {
+  padding: 24px !important;
 }
 
 .project-delete-action {

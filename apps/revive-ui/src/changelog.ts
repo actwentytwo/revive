@@ -9,6 +9,19 @@ export interface ChangeLogEntry {
 
 export const changelog: ChangeLogEntry[] = [
   {
+    version: '0.5',
+    date: '2026-06-27',
+    title: 'Projects are now saved and reusable',
+    summary:
+      'REVIVE now saves project setup through the API so operators can return to the same migration project without rebuilding it in the browser.',
+    highlights: [
+      'Projects are stored in the database instead of only in local browser storage',
+      'Saved source environment setup stays attached to each project',
+      'REVIVE now shows a dedicated API offline page when the backend is unavailable',
+    ],
+    status: 'Live',
+  },
+  {
     version: '0.2',
     date: '2026-06-26',
     title: 'Source connection and video discovery',

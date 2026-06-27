@@ -2,8 +2,8 @@
 
 REVIVE is a greenfield Vbrick Rev migration tool scaffolded from the supplied requirements document. The current foundation is intentionally focused on a real integration slice:
 
-- `apps/web`: React + TypeScript + Material UI operator console
-- `apps/api`: Node + Express + tRPC backend
+- `apps/revive-ui`: React + TypeScript + Material UI operator console
+- `apps/revive-api`: Node + Express + tRPC backend
 - `packages/shared`: shared migration domain types
 
 ## What is implemented
@@ -21,7 +21,7 @@ Source environment details are now stored per project in MongoDB. The backend st
 
 ```bash
 pnpm install
-cp .env.example .env
+cp apps/revive-api/.env.example apps/revive-api/.env
 pnpm dev
 ```
 
@@ -32,6 +32,12 @@ Set these environment variables before starting the API:
 
 - `MONGODB_URI`
 - `MONGODB_DB_NAME`
+
+The API reads them from `apps/revive-api/.env`.
+
+For the current local Docker-backed Mongo setup, use an authenticated URI like:
+
+- `MONGODB_URI=mongodb://revive:replace-me@127.0.0.1:27017/revive?authSource=revive&directConnection=true`
 
 ## Suggested next steps
 
