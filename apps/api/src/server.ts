@@ -1,6 +1,7 @@
 import cors from 'cors'
 import express from 'express'
 import { createExpressMiddleware } from '@trpc/server/adapters/express'
+import { closeMongoConnection } from './db/mongo.js'
 import { appRouter } from './router.js'
 
 const app = express()
@@ -27,3 +28,11 @@ const port = Number(process.env.PORT ?? 3000)
 app.listen(port, () => {
   console.log(`REVIVE API listening on http://localhost:${port}`)
 })
+
+for (const signal of ['SIGINT', 'SIGTERM'] as const) {
+  process.on(signal, () => {
+    void closeMongoConnection().finally(() => {
+      process.exit(0)
+    })
+  })
+}

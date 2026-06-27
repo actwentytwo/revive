@@ -42,6 +42,7 @@ import {
 } from '@mui/material'
 import { DataGrid, type GridColDef, type GridPaginationModel } from '@mui/x-data-grid'
 import type {
+  MigrationProject,
   RevAuthType,
   RevEnvironmentInput,
   RevEnvironmentValidation,
@@ -57,14 +58,8 @@ import {
 } from 'react-router-dom'
 import { changelog, type ChangeLogEntry } from '../changelog'
 import { trpc } from '../main'
-import {
-  createProject,
-  defaultProjects,
-  type MigrationProject,
-} from '../projects'
 import '../App.css'
 
-const PROJECTS_STORAGE_KEY = 'revive-projects'
 const ACTIVE_PROJECT_STORAGE_KEY = 'revive-active-project-id'
 
 const columns: GridColDef<SourceVideoRecord>[] = [
@@ -150,55 +145,9 @@ function compareVersionsDescending(left: string, right: string) {
   return right.localeCompare(left, undefined, { numeric: true, sensitivity: 'base' })
 }
 
-function loadProjects() {
-  const saved = window.localStorage.getItem(PROJECTS_STORAGE_KEY)
-  if (!saved) {
-    return defaultProjects
-  }
-
-  try {
-    const parsed = JSON.parse(saved) as MigrationProject[]
-    const normalized = normalizeProjects(parsed)
-    return normalized.length > 0 ? normalized : defaultProjects
-  } catch {
-    return defaultProjects
-  }
-}
-
-function normalizeProjects(projects: MigrationProject[]) {
-  if (projects.length === 0) {
-    return defaultProjects
-  }
-
-  const legacySeedIds = new Set(['dev-refresh', 'preprod-cutover'])
-  const isOnlyLegacySeedProjects =
-    projects.every((project) => legacySeedIds.has(project.id)) &&
-    projects.every(
-      (project) =>
-        project.sourceEnvironment === null && project.validatedEnvironment === null,
-    )
-
-  if (isOnlyLegacySeedProjects) {
-    return defaultProjects
-  }
-
-  return projects.map((project) => {
-    if (project.id === 'dev-refresh' && project.name === 'Dev Refresh') {
-      return {
-        ...project,
-        id: 'default',
-        name: 'Default',
-        summary: 'The default migration project.',
-      }
-    }
-
-    return project
-  })
-}
-
-function loadActiveProjectId(projects: MigrationProject[]) {
+function loadActiveProjectId() {
   const saved = window.localStorage.getItem(ACTIVE_PROJECT_STORAGE_KEY)
-  return projects.some((project) => project.id === saved) ? saved! : projects[0].id
+  return saved || 'default'
 }
 
 function ReviveLogo() {
@@ -218,6 +167,7 @@ function ReviveLogo() {
 }
 
 export function AppShell() {
+  const utils = trpc.useUtils()
   const [mode, setMode] = useState<'light' | 'dark'>(() => {
     const savedMode = window.localStorage.getItem('revive-color-mode')
     if (savedMode === 'light' || savedMode === 'dark') {
@@ -226,10 +176,7 @@ export function AppShell() {
 
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   })
-  const [projects, setProjects] = useState<MigrationProject[]>(() => loadProjects())
-  const [activeProjectId, setActiveProjectId] = useState<string>(() =>
-    loadActiveProjectId(loadProjects()),
-  )
+  const [activeProjectId, setActiveProjectId] = useState<string>(() => loadActiveProjectId())
   const [authType, setAuthType] = useState<RevAuthType>('apiKey')
   const [url, setUrl] = useState('')
   const [apiKey, setApiKey] = useState('')
@@ -269,8 +216,12 @@ export function AppShell() {
     [mode],
   )
 
-  const validateMutation = trpc.validateSourceEnvironment.useMutation()
-  const videosMutation = trpc.listSourceVideos.useMutation()
+  const projectsQuery = trpc.projects.list.useQuery()
+  const createProjectMutation = trpc.projects.create.useMutation()
+  const deleteProjectMutation = trpc.projects.delete.useMutation()
+  const validateMutation = trpc.projects.validateSourceEnvironment.useMutation()
+  const videosMutation = trpc.projects.listSourceVideos.useMutation()
+  const projects = useMemo(() => projectsQuery.data ?? [], [projectsQuery.data])
 
   const activeProject = useMemo(
     () => projects.find((project) => project.id === activeProjectId) ?? projects[0],
@@ -298,9 +249,9 @@ export function AppShell() {
     }
   }, [apiKey, authType, password, secret, url, username])
 
-  const fetchVideos = useEffectEvent(async (environment: RevEnvironmentInput) => {
+  const fetchVideos = useEffectEvent(async () => {
     await videosMutation.mutateAsync({
-      environment,
+      projectId: activeProjectId,
       search: deferredSearch,
       page: paginationModel.page,
       pageSize: paginationModel.pageSize,
@@ -312,7 +263,7 @@ export function AppShell() {
       return
     }
 
-    void fetchVideos(submittedEnvironment)
+    void fetchVideos()
   }, [deferredSearch, paginationModel.page, paginationModel.pageSize, submittedEnvironment])
 
   useEffect(() => {
@@ -352,57 +303,53 @@ export function AppShell() {
   }, [mode])
 
   useEffect(() => {
-    window.localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects))
-  }, [projects])
-
-  useEffect(() => {
     window.localStorage.setItem(ACTIVE_PROJECT_STORAGE_KEY, activeProjectId)
   }, [activeProjectId])
 
-  const updateActiveProject = (updater: (project: MigrationProject) => MigrationProject) => {
+  useEffect(() => {
+    if (projects.length === 0) {
+      return
+    }
+
+    if (!projects.some((project) => project.id === activeProjectId)) {
+      setActiveProjectId(projects[0].id)
+    }
+  }, [activeProjectId, projects])
+
+  const handleValidate = async () => {
     if (!activeProject) {
       return
     }
 
-    setProjects((current) =>
-      current.map((project) =>
-        project.id === activeProject.id ? updater(project) : project,
-      ),
-    )
-  }
-
-  const handleValidate = async () => {
-    const result = await validateMutation.mutateAsync(currentEnvironment)
-
-    updateActiveProject((project) => ({
-      ...project,
-      sourceEnvironment: currentEnvironment,
-      validatedEnvironment: result,
-      updatedAt: new Date().toISOString(),
-    }))
+    await validateMutation.mutateAsync({
+      projectId: activeProject.id,
+      environment: currentEnvironment,
+    })
+    await utils.projects.list.invalidate()
 
     setPaginationModel((current) => ({ ...current, page: 0 }))
   }
 
-  const handleCreateProject = () => {
+  const handleCreateProject = async () => {
     const name = newProjectName.trim()
     if (!name) {
       return
     }
 
-    const project = createProject(
+    const project = await createProjectMutation.mutateAsync({
       name,
-      newProjectSummary.trim() || 'A migration project for a specific source and destination pairing.',
-    )
+      summary:
+        newProjectSummary.trim() || 'A migration project for a specific source and destination pairing.',
+    })
 
-    setProjects((current) => [...current, project])
     setActiveProjectId(project.id)
+    await utils.projects.list.invalidate()
     setNewProjectName('')
     setNewProjectSummary('')
     setIsCreateDialogOpen(false)
   }
 
-  const handleDeleteProject = (projectId: string) => {
+  const handleDeleteProject = async (projectId: string) => {
     const project = projects.find((item) => item.id === projectId)
     if (!project || projects.length <= 1 || project.id === 'default') {
       return
@@ -417,14 +364,20 @@ export function AppShell() {
     }
 
     const remainingProjects = projects.filter((item) => item.id !== projectId)
-    setProjects(remainingProjects)
+    await deleteProjectMutation.mutateAsync({ projectId })
+    await utils.projects.list.invalidate()
 
     if (activeProjectId === projectId) {
       setActiveProjectId(remainingProjects[0].id)
     }
   }
 
-  const isBusy = validateMutation.isPending || videosMutation.isPending
+  const isBusy =
+    projectsQuery.isLoading ||
+    createProjectMutation.isPending ||
+    deleteProjectMutation.isPending ||
+    validateMutation.isPending ||
+    videosMutation.isPending
   const rows = videosMutation.data?.items ?? []
   const rowCount = videosMutation.data?.total ?? 0
   const connected = Boolean(validatedEnvironment)
@@ -447,7 +400,13 @@ export function AppShell() {
     currentVersion,
     isBusy,
     onDeleteProject: handleDeleteProject,
-    onRefresh: () => submittedEnvironment && void fetchVideos(submittedEnvironment),
+    onRefresh: () => {
+      if (!submittedEnvironment || !activeProject) {
+        return
+      }
+
+      void fetchVideos()
+    },
     onSelectProject: setActiveProjectId,
     onValidate: () => void handleValidate(),
     orderedChangelog,
@@ -546,6 +505,7 @@ export function AppShell() {
             </Paper>
 
             {isBusy ? <LinearProgress /> : null}
+            {projectsQuery.error ? <Alert severity="error">{projectsQuery.error.message}</Alert> : null}
 
             <Outlet context={outletContext} />
           </Stack>
@@ -586,7 +546,11 @@ export function AppShell() {
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setIsCreateDialogOpen(false)}>Cancel</Button>
-            <Button variant="contained" onClick={handleCreateProject} disabled={!newProjectName.trim()}>
+            <Button
+              variant="contained"
+              onClick={() => void handleCreateProject()}
+              disabled={!newProjectName.trim() || createProjectMutation.isPending}
+            >
               Create project
             </Button>
           </DialogActions>
@@ -618,6 +582,10 @@ export function DefaultProjectHomeRoute() {
   const navigate = useNavigate()
 
   useEffect(() => {
+    if (projects.length === 0) {
+      return
+    }
+
     const defaultProject = projects.find((project) => project.id === 'default') ?? projects[0]
 
     if (defaultProject) {

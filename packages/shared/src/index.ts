@@ -21,6 +21,16 @@ export interface RevEnvironmentValidation {
   validatedAt: string
 }
 
+export interface MigrationProject {
+  id: string
+  name: string
+  summary: string
+  sourceEnvironment: RevEnvironmentInput | null
+  validatedEnvironment: RevEnvironmentValidation | null
+  createdAt: string
+  updatedAt: string
+}
+
 export interface SourceVideoRecord {
   id: string
   title: string

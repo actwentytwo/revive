@@ -12,6 +12,7 @@
     "lint": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "mongodb": "^6.18.0",
     "@revive/shared": "workspace:*",
     "@trpc/server": "^11.7.1",
     "@vbrick/rev-client": "^0.25.6",
