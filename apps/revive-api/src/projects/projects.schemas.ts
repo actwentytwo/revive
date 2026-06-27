@@ -27,7 +27,9 @@ export const migrationProjectSchema = z.object({
   name: z.string().min(1),
   summary: z.string().min(1),
   sourceEnvironment: environmentSchema.nullable(),
-  validatedEnvironment: environmentValidationSchema.nullable(),
+  sourceValidatedEnvironment: environmentValidationSchema.nullable(),
+  destinationEnvironment: environmentSchema.nullable(),
+  destinationValidatedEnvironment: environmentValidationSchema.nullable(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 })
@@ -51,6 +53,11 @@ export const validateSourceEnvironmentInputSchema = z.object({
   environment: environmentSchema,
 })
 
+export const validateDestinationEnvironmentInputSchema = z.object({
+  projectId: z.string().trim().min(1),
+  environment: environmentSchema,
+})
+
 export const listSourceVideosInputSchema = z.object({
   projectId: z.string().trim().min(1),
   search: z.string().trim().optional(),
@@ -65,3 +72,4 @@ export type MigrationProjectRecord = z.infer<typeof migrationProjectRecordSchema
 export type RevEnvironmentInput = z.infer<typeof environmentSchema>
 export type RevEnvironmentValidation = z.infer<typeof environmentValidationSchema>
 export type ValidateSourceEnvironmentInput = z.infer<typeof validateSourceEnvironmentInputSchema>
+export type ValidateDestinationEnvironmentInput = z.infer<typeof validateDestinationEnvironmentInputSchema>

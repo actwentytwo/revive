@@ -26,7 +26,9 @@ export interface MigrationProject {
   name: string
   summary: string
   sourceEnvironment: RevEnvironmentInput | null
-  validatedEnvironment: RevEnvironmentValidation | null
+  sourceValidatedEnvironment: RevEnvironmentValidation | null
+  destinationEnvironment: RevEnvironmentInput | null
+  destinationValidatedEnvironment: RevEnvironmentValidation | null
   createdAt: string
   updatedAt: string
 }

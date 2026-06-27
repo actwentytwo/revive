@@ -6,6 +6,7 @@ import {
   deleteProject,
   listProjects,
   listSourceVideosForProject,
+  validateDestinationEnvironmentForProject,
   validateSourceEnvironmentForProject,
 } from './projects.service.js'
 import {
@@ -13,6 +14,7 @@ import {
   deleteProjectInputSchema,
   listSourceVideosInputSchema,
   migrationProjectSchema,
+  validateDestinationEnvironmentInputSchema,
   validateSourceEnvironmentInputSchema,
 } from './projects.schemas.js'
 
@@ -53,6 +55,16 @@ export const projectsRouter = router({
         return await validateSourceEnvironmentForProject(input)
       } catch (error) {
         throw toBadRequest(error, 'Failed to validate Rev environment')
+      }
+    }),
+  validateDestinationEnvironment: publicProcedure
+    .input(validateDestinationEnvironmentInputSchema)
+    .output(migrationProjectSchema)
+    .mutation(async ({ input }) => {
+      try {
+        return await validateDestinationEnvironmentForProject(input)
+      } catch (error) {
+        throw toBadRequest(error, 'Failed to validate destination Rev environment')
       }
     }),
   listSourceVideos: publicProcedure

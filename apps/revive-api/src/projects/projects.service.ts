@@ -28,8 +28,10 @@ function toProject(record: MigrationProjectRecord): MigrationProject {
     id: record.id,
     name: record.name,
     summary: record.summary,
-    sourceEnvironment: record.sourceEnvironment,
-    validatedEnvironment: record.validatedEnvironment,
+    sourceEnvironment: record.sourceEnvironment ?? null,
+    sourceValidatedEnvironment: record.sourceValidatedEnvironment ?? null,
+    destinationEnvironment: record.destinationEnvironment ?? null,
+    destinationValidatedEnvironment: record.destinationValidatedEnvironment ?? null,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
   }
@@ -43,7 +45,9 @@ function createDefaultProjectRecord(): MigrationProjectRecord {
     name: 'Default',
     summary: 'The default migration project.',
     sourceEnvironment: null,
-    validatedEnvironment: null,
+    sourceValidatedEnvironment: null,
+    destinationEnvironment: null,
+    destinationValidatedEnvironment: null,
     createdAt: timestamp,
     updatedAt: timestamp,
     createdBy: SYSTEM_ACTOR,
@@ -114,7 +118,9 @@ export async function createProject(input: CreateProjectInput) {
     name: input.name.trim(),
     summary: input.summary.trim(),
     sourceEnvironment: null,
-    validatedEnvironment: null,
+    sourceValidatedEnvironment: null,
+    destinationEnvironment: null,
+    destinationValidatedEnvironment: null,
     createdAt: timestamp,
     updatedAt: timestamp,
     createdBy: SYSTEM_ACTOR,
@@ -153,7 +159,26 @@ export async function validateSourceEnvironmentForProject(args: {
   const updatedProject: MigrationProjectRecord = {
     ...project,
     sourceEnvironment: args.environment,
-    validatedEnvironment: validation,
+    sourceValidatedEnvironment: validation,
+    updatedAt: new Date().toISOString(),
+    updatedBy: SYSTEM_ACTOR,
+  }
+
+  await projectsRepository.replace(updatedProject)
+  return toProject(updatedProject)
+}
+
+export async function validateDestinationEnvironmentForProject(args: {
+  projectId: string
+  environment: RevEnvironmentInput
+}) {
+  const project = await getProjectRecordOrThrow(args.projectId)
+  const validation = await revService.validateEnvironment(args.environment)
+
+  const updatedProject: MigrationProjectRecord = {
+    ...project,
+    destinationEnvironment: args.environment,
+    destinationValidatedEnvironment: validation,
     updatedAt: new Date().toISOString(),
     updatedBy: SYSTEM_ACTOR,
   }

@@ -105,7 +105,8 @@ const projectNavItems = [
 type AppShellOutletContext = {
   activeProject: MigrationProject | undefined
   activeProjectId: string
-  connected: boolean
+  sourceConnected: boolean
+  destinationConnected: boolean
   currentVersion: string
   isBusy: boolean
   orderedChangelog: ChangeLogEntry[]
@@ -116,29 +117,45 @@ type AppShellOutletContext = {
   search: string
   setPaginationModel: (model: GridPaginationModel) => void
   setSearch: (value: string) => void
-  validateError?: string
+  sourceValidateError?: string
+  destinationValidateError?: string
   videosError?: string
   videosLoading: boolean
   onDeleteProject: (projectId: string) => void
   onRefresh: () => void
   onSelectProject: (projectId: string) => void
-  onValidate: () => void
+  onValidateSource: () => void
+  onValidateDestination: () => void
 } & Pick<
   ConfigurationPageProps,
-  | 'apiKey'
-  | 'authType'
-  | 'password'
-  | 'secret'
-  | 'setApiKey'
-  | 'setAuthType'
-  | 'setPassword'
-  | 'setSecret'
-  | 'setUrl'
-  | 'setUsername'
-  | 'submittedEnvironment'
-  | 'url'
-  | 'username'
-  | 'validatedEnvironment'
+  | 'sourceApiKey'
+  | 'sourceAuthType'
+  | 'sourcePassword'
+  | 'sourceSecret'
+  | 'sourceSubmittedEnvironment'
+  | 'sourceUrl'
+  | 'sourceUsername'
+  | 'sourceValidatedEnvironment'
+  | 'destinationApiKey'
+  | 'destinationAuthType'
+  | 'destinationPassword'
+  | 'destinationSecret'
+  | 'destinationSubmittedEnvironment'
+  | 'destinationUrl'
+  | 'destinationUsername'
+  | 'destinationValidatedEnvironment'
+  | 'setDestinationApiKey'
+  | 'setDestinationAuthType'
+  | 'setDestinationPassword'
+  | 'setDestinationSecret'
+  | 'setDestinationUrl'
+  | 'setDestinationUsername'
+  | 'setSourceApiKey'
+  | 'setSourceAuthType'
+  | 'setSourcePassword'
+  | 'setSourceSecret'
+  | 'setSourceUrl'
+  | 'setSourceUsername'
 >
 
 function compareVersionsDescending(left: string, right: string) {
@@ -177,12 +194,18 @@ export function AppShell() {
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   })
   const [activeProjectId, setActiveProjectId] = useState<string>(() => loadActiveProjectId())
-  const [authType, setAuthType] = useState<RevAuthType>('apiKey')
-  const [url, setUrl] = useState('')
-  const [apiKey, setApiKey] = useState('')
-  const [secret, setSecret] = useState('')
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
+  const [sourceAuthType, setSourceAuthType] = useState<RevAuthType>('apiKey')
+  const [sourceUrl, setSourceUrl] = useState('')
+  const [sourceApiKey, setSourceApiKey] = useState('')
+  const [sourceSecret, setSourceSecret] = useState('')
+  const [sourceUsername, setSourceUsername] = useState('')
+  const [sourcePassword, setSourcePassword] = useState('')
+  const [destinationAuthType, setDestinationAuthType] = useState<RevAuthType>('apiKey')
+  const [destinationUrl, setDestinationUrl] = useState('')
+  const [destinationApiKey, setDestinationApiKey] = useState('')
+  const [destinationSecret, setDestinationSecret] = useState('')
+  const [destinationUsername, setDestinationUsername] = useState('')
+  const [destinationPassword, setDestinationPassword] = useState('')
   const [search, setSearch] = useState('')
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [newProjectName, setNewProjectName] = useState('')
@@ -219,7 +242,8 @@ export function AppShell() {
   const projectsQuery = trpc.projects.list.useQuery()
   const createProjectMutation = trpc.projects.create.useMutation()
   const deleteProjectMutation = trpc.projects.delete.useMutation()
-  const validateMutation = trpc.projects.validateSourceEnvironment.useMutation()
+  const validateSourceMutation = trpc.projects.validateSourceEnvironment.useMutation()
+  const validateDestinationMutation = trpc.projects.validateDestinationEnvironment.useMutation()
   const videosMutation = trpc.projects.listSourceVideos.useMutation()
   const projects = useMemo(() => projectsQuery.data ?? [], [projectsQuery.data])
 
@@ -228,26 +252,53 @@ export function AppShell() {
     [activeProjectId, projects],
   )
 
-  const submittedEnvironment = activeProject?.sourceEnvironment ?? null
-  const validatedEnvironment = activeProject?.validatedEnvironment ?? null
+  const sourceSubmittedEnvironment = activeProject?.sourceEnvironment ?? null
+  const sourceValidatedEnvironment = activeProject?.sourceValidatedEnvironment ?? null
+  const destinationSubmittedEnvironment = activeProject?.destinationEnvironment ?? null
+  const destinationValidatedEnvironment = activeProject?.destinationValidatedEnvironment ?? null
 
-  const currentEnvironment = useMemo<RevEnvironmentInput>(() => {
-    if (authType === 'apiKey') {
+  const currentSourceEnvironment = useMemo<RevEnvironmentInput>(() => {
+    if (sourceAuthType === 'apiKey') {
       return {
-        url,
-        authType,
-        apiKey,
-        secret,
+        url: sourceUrl,
+        authType: sourceAuthType,
+        apiKey: sourceApiKey,
+        secret: sourceSecret,
       }
     }
 
     return {
-      url,
-      authType,
-      username,
-      password,
+      url: sourceUrl,
+      authType: sourceAuthType,
+      username: sourceUsername,
+      password: sourcePassword,
     }
-  }, [apiKey, authType, password, secret, url, username])
+  }, [sourceApiKey, sourceAuthType, sourcePassword, sourceSecret, sourceUrl, sourceUsername])
+
+  const currentDestinationEnvironment = useMemo<RevEnvironmentInput>(() => {
+    if (destinationAuthType === 'apiKey') {
+      return {
+        url: destinationUrl,
+        authType: destinationAuthType,
+        apiKey: destinationApiKey,
+        secret: destinationSecret,
+      }
+    }
+
+    return {
+      url: destinationUrl,
+      authType: destinationAuthType,
+      username: destinationUsername,
+      password: destinationPassword,
+    }
+  }, [
+    destinationApiKey,
+    destinationAuthType,
+    destinationPassword,
+    destinationSecret,
+    destinationUrl,
+    destinationUsername,
+  ])
 
   const fetchVideos = useEffectEvent(async () => {
     await videosMutation.mutateAsync({
@@ -259,12 +310,12 @@ export function AppShell() {
   })
 
   useEffect(() => {
-    if (!submittedEnvironment) {
+    if (!sourceSubmittedEnvironment) {
       return
     }
 
     void fetchVideos()
-  }, [deferredSearch, paginationModel.page, paginationModel.pageSize, submittedEnvironment])
+  }, [deferredSearch, paginationModel.page, paginationModel.pageSize, sourceSubmittedEnvironment])
 
   useEffect(() => {
     if (!activeProject) {
@@ -273,27 +324,51 @@ export function AppShell() {
 
     const source = activeProject.sourceEnvironment
     if (!source) {
-      setAuthType('apiKey')
-      setUrl('')
-      setApiKey('')
-      setSecret('')
-      setUsername('')
-      setPassword('')
+      setSourceAuthType('apiKey')
+      setSourceUrl('')
+      setSourceApiKey('')
+      setSourceSecret('')
+      setSourceUsername('')
+      setSourcePassword('')
+    } else {
+      setSourceUrl(source.url)
+      setSourceAuthType(source.authType)
+      if (source.authType === 'apiKey') {
+        setSourceApiKey(source.apiKey)
+        setSourceSecret(source.secret)
+        setSourceUsername('')
+        setSourcePassword('')
+      } else {
+        setSourceUsername(source.username)
+        setSourcePassword(source.password)
+        setSourceApiKey('')
+        setSourceSecret('')
+      }
+    }
+
+    const destination = activeProject.destinationEnvironment
+    if (!destination) {
+      setDestinationAuthType('apiKey')
+      setDestinationUrl('')
+      setDestinationApiKey('')
+      setDestinationSecret('')
+      setDestinationUsername('')
+      setDestinationPassword('')
       return
     }
 
-    setUrl(source.url)
-    setAuthType(source.authType)
-    if (source.authType === 'apiKey') {
-      setApiKey(source.apiKey)
-      setSecret(source.secret)
-      setUsername('')
-      setPassword('')
+    setDestinationUrl(destination.url)
+    setDestinationAuthType(destination.authType)
+    if (destination.authType === 'apiKey') {
+      setDestinationApiKey(destination.apiKey)
+      setDestinationSecret(destination.secret)
+      setDestinationUsername('')
+      setDestinationPassword('')
     } else {
-      setUsername(source.username)
-      setPassword(source.password)
-      setApiKey('')
-      setSecret('')
+      setDestinationUsername(destination.username)
+      setDestinationPassword(destination.password)
+      setDestinationApiKey('')
+      setDestinationSecret('')
     }
   }, [activeProject])
 
@@ -316,18 +391,30 @@ export function AppShell() {
     }
   }, [activeProjectId, projects])
 
-  const handleValidate = async () => {
+  const handleValidateSource = async () => {
     if (!activeProject) {
       return
     }
 
-    await validateMutation.mutateAsync({
+    await validateSourceMutation.mutateAsync({
       projectId: activeProject.id,
-      environment: currentEnvironment,
+      environment: currentSourceEnvironment,
     })
     await utils.projects.list.invalidate()
 
     setPaginationModel((current) => ({ ...current, page: 0 }))
+  }
+
+  const handleValidateDestination = async () => {
+    if (!activeProject) {
+      return
+    }
+
+    await validateDestinationMutation.mutateAsync({
+      projectId: activeProject.id,
+      environment: currentDestinationEnvironment,
+    })
+    await utils.projects.list.invalidate()
   }
 
   const handleCreateProject = async () => {
@@ -376,11 +463,13 @@ export function AppShell() {
     projectsQuery.isLoading ||
     createProjectMutation.isPending ||
     deleteProjectMutation.isPending ||
-    validateMutation.isPending ||
+    validateSourceMutation.isPending ||
+    validateDestinationMutation.isPending ||
     videosMutation.isPending
   const rows = videosMutation.data?.items ?? []
   const rowCount = videosMutation.data?.total ?? 0
-  const connected = Boolean(validatedEnvironment)
+  const sourceConnected = Boolean(sourceValidatedEnvironment)
+  const destinationConnected = Boolean(destinationValidatedEnvironment)
   const orderedChangelog = useMemo(
     () => [...changelog].sort((left, right) => compareVersionsDescending(left.version, right.version)),
     [],
@@ -395,42 +484,59 @@ export function AppShell() {
   const outletContext: AppShellOutletContext = {
     activeProject,
     activeProjectId,
-    apiKey,
-    authType,
-    connected,
+    destinationApiKey,
+    destinationAuthType,
+    destinationConnected,
+    destinationPassword,
+    destinationSecret,
+    destinationSubmittedEnvironment,
+    destinationUrl,
+    destinationUsername,
+    destinationValidatedEnvironment,
     currentVersion,
     isBusy,
+    onValidateDestination: () => void handleValidateDestination(),
     onDeleteProject: handleDeleteProject,
     onRefresh: () => {
-      if (!submittedEnvironment || !activeProject) {
+      if (!sourceSubmittedEnvironment || !activeProject) {
         return
       }
 
       void fetchVideos()
     },
     onSelectProject: setActiveProjectId,
-    onValidate: () => void handleValidate(),
+    onValidateSource: () => void handleValidateSource(),
     orderedChangelog,
     paginationModel,
-    password,
     projects,
     rowCount,
     rows,
     search,
-    secret,
-    setApiKey,
-    setAuthType,
+    setDestinationApiKey,
+    setDestinationAuthType,
     setPaginationModel,
-    setPassword,
+    setDestinationPassword,
     setSearch,
-    setSecret,
-    setUrl,
-    setUsername,
-    submittedEnvironment,
-    url,
-    username,
-    validatedEnvironment,
-    validateError: validateMutation.error?.message,
+    setDestinationSecret,
+    setDestinationUrl,
+    setDestinationUsername,
+    setSourceApiKey,
+    setSourceAuthType,
+    setSourcePassword,
+    setSourceSecret,
+    setSourceUrl,
+    setSourceUsername,
+    sourceApiKey,
+    sourceAuthType,
+    sourceConnected,
+    sourcePassword,
+    sourceSecret,
+    sourceSubmittedEnvironment,
+    sourceUrl,
+    sourceUsername,
+    sourceValidatedEnvironment,
+    sourceValidateError: validateSourceMutation.error?.message,
+    destinationValidateError: validateDestinationMutation.error?.message,
     videosError: videosMutation.error?.message,
     videosLoading: videosMutation.isPending,
   }
@@ -659,9 +765,16 @@ export function DefaultProjectHomeRoute() {
 }
 
 export function OverviewPageRoute() {
-  const { activeProject, connected, rowCount } = useReviveAppContext()
+  const { activeProject, sourceConnected, destinationConnected, rowCount } = useReviveAppContext()
 
-  return <OverviewPage activeProject={activeProject} connected={connected} rowCount={rowCount} />
+  return (
+    <OverviewPage
+      activeProject={activeProject}
+      sourceConnected={sourceConnected}
+      destinationConnected={destinationConnected}
+      rowCount={rowCount}
+    />
+  )
 }
 
 export function ConfigurationPageRoute() {
@@ -670,23 +783,39 @@ export function ConfigurationPageRoute() {
   return (
     <ConfigurationPage
       activeProject={context.activeProject}
-      authType={context.authType}
-      url={context.url}
-      apiKey={context.apiKey}
-      secret={context.secret}
-      username={context.username}
-      password={context.password}
-      setAuthType={context.setAuthType}
-      setUrl={context.setUrl}
-      setApiKey={context.setApiKey}
-      setSecret={context.setSecret}
-      setUsername={context.setUsername}
-      setPassword={context.setPassword}
+      sourceAuthType={context.sourceAuthType}
+      sourceUrl={context.sourceUrl}
+      sourceApiKey={context.sourceApiKey}
+      sourceSecret={context.sourceSecret}
+      sourceUsername={context.sourceUsername}
+      sourcePassword={context.sourcePassword}
+      setSourceAuthType={context.setSourceAuthType}
+      setSourceUrl={context.setSourceUrl}
+      setSourceApiKey={context.setSourceApiKey}
+      setSourceSecret={context.setSourceSecret}
+      setSourceUsername={context.setSourceUsername}
+      setSourcePassword={context.setSourcePassword}
+      destinationAuthType={context.destinationAuthType}
+      destinationUrl={context.destinationUrl}
+      destinationApiKey={context.destinationApiKey}
+      destinationSecret={context.destinationSecret}
+      destinationUsername={context.destinationUsername}
+      destinationPassword={context.destinationPassword}
+      setDestinationAuthType={context.setDestinationAuthType}
+      setDestinationUrl={context.setDestinationUrl}
+      setDestinationApiKey={context.setDestinationApiKey}
+      setDestinationSecret={context.setDestinationSecret}
+      setDestinationUsername={context.setDestinationUsername}
+      setDestinationPassword={context.setDestinationPassword}
       isBusy={context.isBusy}
-      submittedEnvironment={context.submittedEnvironment}
-      validatedEnvironment={context.validatedEnvironment}
-      validateError={context.validateError}
-      onValidate={context.onValidate}
+      sourceSubmittedEnvironment={context.sourceSubmittedEnvironment}
+      sourceValidatedEnvironment={context.sourceValidatedEnvironment}
+      destinationSubmittedEnvironment={context.destinationSubmittedEnvironment}
+      destinationValidatedEnvironment={context.destinationValidatedEnvironment}
+      sourceValidateError={context.sourceValidateError}
+      destinationValidateError={context.destinationValidateError}
+      onValidateSource={context.onValidateSource}
+      onValidateDestination={context.onValidateDestination}
       onRefresh={context.onRefresh}
     />
   )
@@ -706,7 +835,7 @@ export function VideosPageRoute() {
       error={context.videosError}
       paginationModel={context.paginationModel}
       setPaginationModel={context.setPaginationModel}
-      connected={context.connected}
+      connected={context.sourceConnected}
     />
   )
 }
@@ -806,7 +935,7 @@ function ProjectsPage({
                   justifyContent={{ xs: 'flex-start', sm: 'flex-end' }}
                   className="project-card-actions"
                 >
-                  {project.validatedEnvironment ? (
+                  {project.sourceValidatedEnvironment && project.destinationValidatedEnvironment ? (
                     <Chip size="small" label="Configured" color="success" />
                   ) : (
                     <Alert
@@ -849,11 +978,13 @@ function ProjectsPage({
 
 function OverviewPage({
   activeProject,
-  connected,
+  sourceConnected,
+  destinationConnected,
   rowCount,
 }: {
   activeProject: MigrationProject | undefined
-  connected: boolean
+  sourceConnected: boolean
+  destinationConnected: boolean
   rowCount: number
 }) {
   return (
@@ -869,7 +1000,8 @@ function OverviewPage({
           />
           <Stack direction="row" spacing={2} useFlexGap flexWrap="wrap">
             <MetricPill label="Project" value={activeProject?.name ?? 'None'} />
-            <MetricPill label="Source connection" value={connected ? 'Connected' : 'Not connected'} />
+            <MetricPill label="Source connection" value={sourceConnected ? 'Connected' : 'Not connected'} />
+            <MetricPill label="Destination connection" value={destinationConnected ? 'Connected' : 'Not connected'} />
             <MetricPill label="Videos loaded" value={String(rowCount)} />
           </Stack>
         </Paper>
@@ -884,6 +1016,18 @@ function OverviewPage({
             <Stack spacing={2}>
               <Fact label="Project" value={activeProject.name} />
               <Fact label="Summary" value={activeProject.summary} />
+              <Fact
+                label="Readiness"
+                value={
+                  sourceConnected && destinationConnected
+                    ? 'Source and destination are ready'
+                    : sourceConnected
+                      ? 'Source ready, destination pending'
+                      : destinationConnected
+                        ? 'Destination ready, source pending'
+                        : 'Source and destination pending'
+                }
+              />
               <Fact label="Created" value={formatTimestamp(activeProject.createdAt)} />
               <Fact label="Updated" value={formatTimestamp(activeProject.updatedAt)} />
             </Stack>
@@ -898,28 +1042,159 @@ function OverviewPage({
 
 type ConfigurationPageProps = {
   activeProject: MigrationProject | undefined
-  authType: RevAuthType
-  url: string
-  apiKey: string
-  secret: string
-  username: string
-  password: string
-  setAuthType: (value: RevAuthType) => void
-  setUrl: (value: string) => void
-  setApiKey: (value: string) => void
-  setSecret: (value: string) => void
-  setUsername: (value: string) => void
-  setPassword: (value: string) => void
+  sourceAuthType: RevAuthType
+  sourceUrl: string
+  sourceApiKey: string
+  sourceSecret: string
+  sourceUsername: string
+  sourcePassword: string
+  setSourceAuthType: (value: RevAuthType) => void
+  setSourceUrl: (value: string) => void
+  setSourceApiKey: (value: string) => void
+  setSourceSecret: (value: string) => void
+  setSourceUsername: (value: string) => void
+  setSourcePassword: (value: string) => void
+  destinationAuthType: RevAuthType
+  destinationUrl: string
+  destinationApiKey: string
+  destinationSecret: string
+  destinationUsername: string
+  destinationPassword: string
+  setDestinationAuthType: (value: RevAuthType) => void
+  setDestinationUrl: (value: string) => void
+  setDestinationApiKey: (value: string) => void
+  setDestinationSecret: (value: string) => void
+  setDestinationUsername: (value: string) => void
+  setDestinationPassword: (value: string) => void
   isBusy: boolean
-  submittedEnvironment: RevEnvironmentInput | null
-  validatedEnvironment: RevEnvironmentValidation | null
-  validateError?: string
-  onValidate: () => void
+  sourceSubmittedEnvironment: RevEnvironmentInput | null
+  sourceValidatedEnvironment: RevEnvironmentValidation | null
+  destinationSubmittedEnvironment: RevEnvironmentInput | null
+  destinationValidatedEnvironment: RevEnvironmentValidation | null
+  sourceValidateError?: string
+  destinationValidateError?: string
+  onValidateSource: () => void
+  onValidateDestination: () => void
   onRefresh: () => void
 }
 
 function ConfigurationPage({
   activeProject,
+  sourceAuthType,
+  sourceUrl,
+  sourceApiKey,
+  sourceSecret,
+  sourceUsername,
+  sourcePassword,
+  setSourceAuthType,
+  setSourceUrl,
+  setSourceApiKey,
+  setSourceSecret,
+  setSourceUsername,
+  setSourcePassword,
+  destinationAuthType,
+  destinationUrl,
+  destinationApiKey,
+  destinationSecret,
+  destinationUsername,
+  destinationPassword,
+  setDestinationAuthType,
+  setDestinationUrl,
+  setDestinationApiKey,
+  setDestinationSecret,
+  setDestinationUsername,
+  setDestinationPassword,
+  isBusy,
+  sourceSubmittedEnvironment,
+  sourceValidatedEnvironment,
+  destinationSubmittedEnvironment,
+  destinationValidatedEnvironment,
+  sourceValidateError,
+  destinationValidateError,
+  onValidateSource,
+  onValidateDestination,
+  onRefresh,
+}: ConfigurationPageProps) {
+  return (
+    <Stack spacing={3}>
+      <PageIntro
+        title="Configuration"
+        subtitle={`Configure the source environment for ${activeProject?.name ?? 'the selected project'}.`}
+      />
+
+      <section className="content-grid">
+        <EnvironmentConfigurationPanel
+          title="Connect Your Source Library"
+          subtitle="These settings identify where videos will be read from."
+          urlLabel="Source Rev URL"
+          authType={sourceAuthType}
+          url={sourceUrl}
+          apiKey={sourceApiKey}
+          secret={sourceSecret}
+          username={sourceUsername}
+          password={sourcePassword}
+          setAuthType={setSourceAuthType}
+          setUrl={setSourceUrl}
+          setApiKey={setSourceApiKey}
+          setSecret={setSourceSecret}
+          setUsername={setSourceUsername}
+          setPassword={setSourcePassword}
+          isBusy={isBusy}
+          submittedEnvironment={sourceSubmittedEnvironment}
+          validateError={sourceValidateError}
+          onValidate={onValidateSource}
+          onRefresh={onRefresh}
+          validateActionLabel="Save and verify source"
+          refreshActionLabel="Refresh source library"
+        />
+
+        <EnvironmentSummaryPanel
+          title="Source Connection Summary"
+          subtitle="REVIVE confirms the source environment details for this project."
+          projectName={activeProject?.name}
+          validatedEnvironment={sourceValidatedEnvironment}
+          emptyMessage="Connect a source environment to view its details here."
+        />
+
+        <EnvironmentConfigurationPanel
+          title="Connect Your Destination Library"
+          subtitle="These settings identify where migrated videos will be written to."
+          urlLabel="Destination Rev URL"
+          authType={destinationAuthType}
+          url={destinationUrl}
+          apiKey={destinationApiKey}
+          secret={destinationSecret}
+          username={destinationUsername}
+          password={destinationPassword}
+          setAuthType={setDestinationAuthType}
+          setUrl={setDestinationUrl}
+          setApiKey={setDestinationApiKey}
+          setSecret={setDestinationSecret}
+          setUsername={setDestinationUsername}
+          setPassword={setDestinationPassword}
+          isBusy={isBusy}
+          submittedEnvironment={destinationSubmittedEnvironment}
+          validateError={destinationValidateError}
+          onValidate={onValidateDestination}
+          validateActionLabel="Save and verify destination"
+        />
+
+        <EnvironmentSummaryPanel
+          title="Destination Connection Summary"
+          subtitle="REVIVE confirms the destination environment details for this project."
+          projectName={activeProject?.name}
+          validatedEnvironment={destinationValidatedEnvironment}
+          emptyMessage="Connect a destination environment to view its details here."
+        />
+      </section>
+    </Stack>
+  )
+}
+
+function EnvironmentConfigurationPanel({
+  title,
+  subtitle,
+  urlLabel,
   authType,
   url,
   apiKey,
@@ -934,91 +1209,124 @@ function ConfigurationPage({
   setPassword,
   isBusy,
   submittedEnvironment,
-  validatedEnvironment,
   validateError,
   onValidate,
   onRefresh,
-}: ConfigurationPageProps) {
+  validateActionLabel,
+  refreshActionLabel,
+}: {
+  title: string
+  subtitle: string
+  urlLabel: string
+  authType: RevAuthType
+  url: string
+  apiKey: string
+  secret: string
+  username: string
+  password: string
+  setAuthType: (value: RevAuthType) => void
+  setUrl: (value: string) => void
+  setApiKey: (value: string) => void
+  setSecret: (value: string) => void
+  setUsername: (value: string) => void
+  setPassword: (value: string) => void
+  isBusy: boolean
+  submittedEnvironment: RevEnvironmentInput | null
+  validateError?: string
+  onValidate: () => void
+  onRefresh?: () => void
+  validateActionLabel: string
+  refreshActionLabel?: string
+}) {
   return (
-    <Stack spacing={3}>
-      <PageIntro
-        title="Configuration"
-        subtitle={`Configure the source environment for ${activeProject?.name ?? 'the selected project'}.`}
+    <Paper className="panel">
+      <PanelTitle
+        icon={<SettingsEthernetRounded />}
+        title={title}
+        subtitle={subtitle}
       />
+      <Stack spacing={2}>
+        <TextField
+          label={urlLabel}
+          placeholder="https://company.rev.vbrick.com"
+          value={url}
+          onChange={(event) => setUrl(event.target.value)}
+          fullWidth
+        />
+        <FormControl fullWidth>
+          <InputLabel id={`${title}-auth-type-label`}>Authentication</InputLabel>
+          <Select
+            labelId={`${title}-auth-type-label`}
+            value={authType}
+            label="Authentication"
+            onChange={(event) => setAuthType(event.target.value as RevAuthType)}
+          >
+            <MenuItem value="apiKey">API key + secret</MenuItem>
+            <MenuItem value="userPassword">Username + password</MenuItem>
+          </Select>
+        </FormControl>
 
-      <section className="content-grid">
-        <Paper className="panel">
-          <PanelTitle
-            icon={<SettingsEthernetRounded />}
-            title="Connect Your Source Library"
-            subtitle="These settings belong to the selected project."
-          />
-          <Stack spacing={2}>
-            <TextField
-              label="Source Rev URL"
-              placeholder="https://company.rev.vbrick.com"
-              value={url}
-              onChange={(event) => setUrl(event.target.value)}
-              fullWidth
-            />
-            <FormControl fullWidth>
-              <InputLabel id="auth-type-label">Authentication</InputLabel>
-              <Select
-                labelId="auth-type-label"
-                value={authType}
-                label="Authentication"
-                onChange={(event) => setAuthType(event.target.value as RevAuthType)}
-              >
-                <MenuItem value="apiKey">API key + secret</MenuItem>
-                <MenuItem value="userPassword">Username + password</MenuItem>
-              </Select>
-            </FormControl>
+        {authType === 'apiKey' ? (
+          <>
+            <TextField label="API key" value={apiKey} onChange={(event) => setApiKey(event.target.value)} fullWidth />
+            <TextField label="Secret" type="password" value={secret} onChange={(event) => setSecret(event.target.value)} fullWidth />
+          </>
+        ) : (
+          <>
+            <TextField label="Username" value={username} onChange={(event) => setUsername(event.target.value)} fullWidth />
+            <TextField label="Password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} fullWidth />
+          </>
+        )}
 
-            {authType === 'apiKey' ? (
-              <>
-                <TextField label="API key" value={apiKey} onChange={(event) => setApiKey(event.target.value)} fullWidth />
-                <TextField label="Secret" type="password" value={secret} onChange={(event) => setSecret(event.target.value)} fullWidth />
-              </>
-            ) : (
-              <>
-                <TextField label="Username" value={username} onChange={(event) => setUsername(event.target.value)} fullWidth />
-                <TextField label="Password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} fullWidth />
-              </>
-            )}
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+          <Button variant="contained" size="large" onClick={onValidate} disabled={isBusy}>
+            {validateActionLabel}
+          </Button>
+          {onRefresh ? (
+            <Button variant="outlined" size="large" disabled={!submittedEnvironment || isBusy} onClick={onRefresh}>
+              {refreshActionLabel ?? 'Refresh'}
+            </Button>
+          ) : null}
+        </Stack>
 
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
-              <Button variant="contained" size="large" onClick={onValidate} disabled={isBusy}>
-                Save and verify
-              </Button>
-              <Button variant="outlined" size="large" disabled={!submittedEnvironment || isBusy} onClick={onRefresh}>
-                Refresh library
-              </Button>
-            </Stack>
+        {validateError ? <Alert severity="error">{validateError}</Alert> : null}
+      </Stack>
+    </Paper>
+  )
+}
 
-            {validateError ? <Alert severity="error">{validateError}</Alert> : null}
-          </Stack>
-        </Paper>
-
-        <Paper className="panel">
-          <PanelTitle
-            icon={<CloudDoneRounded />}
-            title="Connection Summary"
-            subtitle="REVIVE confirms the source environment details for this project."
-          />
-          {validatedEnvironment ? (
-            <Stack spacing={2}>
-              <Fact label="Project" value={activeProject?.name ?? 'No project'} />
-              <Fact label="URL" value={validatedEnvironment.url} />
-              <Fact label="Account ID" value={validatedEnvironment.accountId ?? 'Unavailable'} />
-              <Fact label="Rev version" value={validatedEnvironment.revVersion ?? 'Unavailable'} />
-              <Fact label="Validated at" value={formatTimestamp(validatedEnvironment.validatedAt)} />
-            </Stack>
-          ) : (
-            <Alert severity="warning">Connect a source environment to view its details here.</Alert>
-          )}
-        </Paper>
-      </section>
-    </Stack>
+function EnvironmentSummaryPanel({
+  title,
+  subtitle,
+  projectName,
+  validatedEnvironment,
+  emptyMessage,
+}: {
+  title: string
+  subtitle: string
+  projectName?: string
+  validatedEnvironment: RevEnvironmentValidation | null
+  emptyMessage: string
+}) {
+  return (
+    <Paper className="panel">
+      <PanelTitle
+        icon={<CloudDoneRounded />}
+        title={title}
+        subtitle={subtitle}
+      />
+      {validatedEnvironment ? (
+        <Stack spacing={2}>
+          <Fact label="Project" value={projectName ?? 'No project'} />
+          <Fact label="URL" value={validatedEnvironment.url} />
+          <Fact label="Account ID" value={validatedEnvironment.accountId ?? 'Unavailable'} />
+          <Fact label="Rev version" value={validatedEnvironment.revVersion ?? 'Unavailable'} />
+          <Fact label="Validated at" value={formatTimestamp(validatedEnvironment.validatedAt)} />
+        </Stack>
+      ) : (
+        <Alert severity="warning">{emptyMessage}</Alert>
+      )}
+    </Paper>
   )
 }
 
