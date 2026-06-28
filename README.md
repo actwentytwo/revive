@@ -51,6 +51,13 @@ To match Raven/TAP local workflow, use these checks before starting the API:
 - `pnpm dev:mongo:check` for TCP connectivity only.
 - `pnpm dev:mongo:check:full` for authenticated Mongo ping using `MONGODB_URI`.
 
+## Release workflow
+
+- Run: `pnpm check && pnpm lint && pnpm test && pnpm format:check && pnpm version:check`
+- Update the in-app changelog at `apps/revolution-ui/src/changelog.ts` with release details and `commitRefs`
+- Tag release commits with `vX.Y.Z`
+- See [docs/release-process.md](docs/release-process.md) for full details
+
 ## Suggested next steps
 
 1. Add destination environment persistence and validation for each project.

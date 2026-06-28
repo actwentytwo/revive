@@ -19,7 +19,7 @@ Bring Revolution in line with Raven engineering standards for tooling, structure
 | Formatting + pre-commit | no root Prettier/lint-staged/husky                                           | Prettier + `format:check` + husky/lint-staged                                     | Must match Raven     | P0       |
 | CI gates                | not standardized yet                                                         | lint/check/test/format gates via CI                                               | Must match Raven     | P0       |
 | Versioning              | inconsistent package versions (`0.1.1` root, `0.1.0` API/shared, `0.0.1` UI) | aligned root/API/UI version with version check script                             | Must match Raven     | P0       |
-| Release docs            | no What's New tri-view                                                       | What's New + Release Notes + Technical Changelog workflow                         | Must match Raven     | P1       |
+| Release docs            | no formal release process docs                                               | single lightweight changelog + tagged release flow with commit-hash traceability  | Adapt for Revolution | P1       |
 | Repo conventions        | no local `AGENTS.md` yet                                                     | repo-level instructions plus shared conventions linkage                           | Must match Raven     | P1       |
 | UI architecture         | basic page/component split                                                   | route composition points, thin pages, reusable shell/components/hooks             | Must match Raven     | P1       |
 | API architecture        | good base pattern present                                                    | consistent schema/repository/service/router + boundary validation + error mapping | Must match Raven     | P1       |
@@ -39,10 +39,10 @@ Bring Revolution in line with Raven engineering standards for tooling, structure
 
 ### Phase 1: Release and Process Parity
 
-- [ ] Add local `AGENTS.md` in Revolution linked to shared conventions.
-- [ ] Define release commit flow and tag flow (`vX.Y.Z`).
-- [ ] Add Revolution change docs structure (What’s New, Release Notes, Technical Changelog).
-- [ ] Add initial release entries and ensure commit-hash tracking strategy.
+- [x] Add local `AGENTS.md` in Revolution linked to shared conventions.
+- [x] Define release commit flow and tag flow (`vX.Y.Z`).
+- [x] Keep lightweight single-changelog structure (explicit local override vs Raven tri-doc model).
+- [x] Add initial release commit refs and commit-hash tracking strategy.
 
 ### Phase 2: Architecture Parity
 

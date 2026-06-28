@@ -4,6 +4,7 @@ export interface ChangeLogEntry {
   title: string;
   summary: string;
   highlights: string[];
+  commitRefs?: string[];
   status: "Live" | "In Progress" | "Planned";
 }
 
@@ -19,6 +20,7 @@ export const changelog: ChangeLogEntry[] = [
       "Store product version details alongside each saved configuration",
       "Choose source and destination configurations inside each migration project",
     ],
+    commitRefs: ["6206cb1", "1372059", "adb6ed2"],
     status: "Live",
   },
   {
@@ -32,6 +34,7 @@ export const changelog: ChangeLogEntry[] = [
       "The app shows a dedicated API offline page when the backend is unavailable",
       "Project setup stays reusable between sessions",
     ],
+    commitRefs: ["4e80562", "1a7bcb1"],
     status: "Live",
   },
   {
@@ -45,6 +48,7 @@ export const changelog: ChangeLogEntry[] = [
       "Validate the source environment before continuing",
       "Search and page through the source video library",
     ],
+    commitRefs: ["948e701"],
     status: "Live",
   },
   {
@@ -58,6 +62,7 @@ export const changelog: ChangeLogEntry[] = [
       "Prepare destination connectivity",
       "Support reusable platform setup",
     ],
+    commitRefs: ["6206cb1"],
     status: "Live",
   },
   {
