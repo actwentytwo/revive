@@ -164,6 +164,7 @@ export function AppShell() {
 
   const deferredSearch = useDeferredValue(search)
   const generatedProjectSlug = useMemo(() => slugify(newProjectName), [newProjectName])
+  const onProjectsPage = location.pathname.startsWith('/projects')
   const theme = useMemo(
     () =>
       createTheme({
@@ -279,9 +280,6 @@ export function AppShell() {
 
   useEffect(() => {
     if (projects.length === 0) {
-      if (activeProjectId) {
-        setActiveProjectId('')
-      }
       return
     }
 
@@ -365,9 +363,14 @@ export function AppShell() {
       slug: generatedProjectSlug || undefined,
     })
 
-    setActiveProjectId(project.slug)
-    void navigate(`/project/${project.slug}/overview`)
     await utils.projects.list.invalidate()
+    if (onProjectsPage) {
+      setActiveProjectId('')
+      void navigate('/projects')
+    } else {
+      setActiveProjectId(project.slug)
+      void navigate(`/project/${project.slug}/overview`)
+    }
     setNewProjectName('')
     setNewProjectType('migration')
     setNewProjectSummary('')
@@ -392,17 +395,11 @@ export function AppShell() {
       return
     }
 
-    const remainingProjects = projects.filter((item) => item.id !== deleteProjectId)
     await deleteProjectMutation.mutateAsync({ projectId: deleteProjectId })
     await utils.projects.list.invalidate()
 
-    if (activeProject?.id === deleteProjectId && remainingProjects[0]) {
-      setActiveProjectId(remainingProjects[0].slug)
-      void navigate(`/project/${remainingProjects[0].slug}/overview`)
-    } else if (activeProject?.id === deleteProjectId) {
-      setActiveProjectId('')
-      void navigate('/projects')
-    }
+    setActiveProjectId('')
+    void navigate('/projects')
 
     setIsDeleteProjectDialogOpen(false)
     setDeleteProjectId('')

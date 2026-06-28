@@ -61,11 +61,20 @@ export function ProjectsPage({
               return (
                 <Paper
                   key={project.id}
-                  component="button"
-                  type="button"
+                  component="div"
                   variant="outlined"
                   className={`project-card ${project.id === activeProjectId ? 'project-card-active project-card-selected' : ''}`}
                   onClick={() => onSelectProject(project.slug)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(event) => {
+                    if (event.key !== 'Enter' && event.key !== ' ') {
+                      return
+                    }
+
+                    event.preventDefault()
+                    onSelectProject(project.slug)
+                  }}
                   onDoubleClick={() => {
                     onSelectProject(project.slug)
                     void navigate(`/project/${project.slug}/overview`)
