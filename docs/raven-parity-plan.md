@@ -54,10 +54,10 @@ Bring Revolution in line with Raven engineering standards for tooling, structure
 
 ### Phase 3: Testing and CI Parity
 
-- [ ] Add API unit and integration test layout and scripts equivalent to Raven style.
-- [ ] Add UI unit and integration test layout and scripts equivalent to Raven style.
+- [x] Add API unit and integration test layout and scripts equivalent to Raven style.
+- [x] Add UI unit and integration test layout and scripts equivalent to Raven style.
 - [x] Add CI pipeline enforcing lint/check/test/format gates.
-- [ ] Add minimal coverage thresholds and failure policy.
+- [x] Add minimal coverage thresholds and failure policy.
 
 ### Phase 4: Hardening and Cleanup
 

@@ -64,6 +64,13 @@ To match Raven/TAP local workflow, use these checks before starting the API:
 - Validate boundary rules with `pnpm boundary:check` (also included in `pnpm check`).
 - See [docs/shared-package-boundary.md](docs/shared-package-boundary.md).
 
+## Testing
+
+- `pnpm test` runs workspace tests with coverage.
+- `pnpm test:unit` runs unit suites.
+- `pnpm test:integration` runs integration suites.
+- See [docs/testing-policy.md](docs/testing-policy.md) for layout and coverage policy.
+
 ## Suggested next steps
 
 1. Add destination environment persistence and validation for each project.

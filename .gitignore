@@ -13,3 +13,5 @@ packages/*/dist/
 .env
 .env.*
 !.env.example
+
+coverage/
