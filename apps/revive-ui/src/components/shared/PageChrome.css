@@ -1,0 +1,224 @@
+.page-intro {
+  padding: 24px !important;
+  border-radius: 24px !important;
+  background: var(--surface-bg) !important;
+}
+
+.page-title {
+  margin-bottom: 8px !important;
+}
+
+.panel-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f8d4a4, #f28f3b);
+  color: #14323f;
+}
+
+.panel-icon svg {
+  width: 22px;
+  height: 22px;
+  color: currentColor;
+}
+
+.metric-card,
+.panel,
+.subpanel,
+.metric-pill {
+  border-radius: 24px !important;
+}
+
+.metric-card {
+  padding: 18px !important;
+  background: var(--hero-card-bg) !important;
+  border-color: var(--hero-card-border) !important;
+}
+
+.metric-icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 16px;
+  background: var(--hero-card-icon-bg);
+}
+
+.metric-icon svg {
+  width: 22px;
+  height: 22px;
+  color: currentColor;
+}
+
+.metric-label,
+.fact-label,
+.metric-pill-label {
+  font-size: 0.78rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.metric-value,
+.fact-value,
+.metric-pill-value {
+  font-weight: 700 !important;
+}
+
+.metric-value {
+  font-size: 1.25rem !important;
+  color: var(--hero-card-text) !important;
+}
+
+.metric-card .metric-label {
+  color: var(--hero-card-text-soft) !important;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.panel {
+  grid-column: span 6;
+  padding: 24px !important;
+  background: var(--surface-strong) !important;
+}
+
+.panel-full {
+  grid-column: 1 / -1;
+}
+
+.subpanel,
+.metric-pill {
+  padding: 18px !important;
+}
+
+.metric-pill {
+  min-width: 120px;
+}
+
+.metric-pill-default {
+  background: var(--metric-pill-bg) !important;
+}
+
+.metric-pill-error {
+  background: var(--metric-pill-error-bg) !important;
+}
+
+.fact-block {
+  overflow-wrap: anywhere;
+}
+
+.configuration-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px 20px;
+}
+
+.configuration-summary-grid .fact-block {
+  min-width: 0;
+}
+
+.configuration-card {
+  padding: 14px 16px !important;
+}
+
+.configuration-card h6 {
+  font-size: 1rem;
+}
+
+.configuration-card .MuiChip-root {
+  height: 24px;
+}
+
+.configuration-card .MuiTypography-colorTextSecondary {
+  font-size: 0.92rem;
+}
+
+.changelog-card {
+  padding: 20px !important;
+  border-radius: 22px !important;
+  background: var(--changelog-bg) !important;
+}
+
+.changelog-points {
+  min-width: min(100%, 320px);
+  display: grid;
+  gap: 10px;
+}
+
+.changelog-point {
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--changelog-pill);
+  color: var(--text-main);
+}
+
+.offline-panel {
+  padding: 24px !important;
+}
+
+.project-shell {
+  padding: 20px 24px !important;
+  border-radius: 24px !important;
+  background: var(--surface-bg) !important;
+}
+
+.project-shell-label {
+  font-size: 0.78rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-soft) !important;
+  margin-bottom: 6px !important;
+}
+
+.project-tabs {
+  align-items: center;
+}
+
+.project-tab {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--text-main);
+  background: var(--surface-muted);
+  border: 1px solid transparent;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.project-tab:hover {
+  background: var(--surface-muted-hover);
+  border-color: var(--nav-active-outline);
+}
+
+.project-tab-active {
+  background: var(--nav-active-bg);
+  color: var(--nav-active-text) !important;
+  border-color: var(--nav-active-outline);
+}
+
+.project-tab-active:hover,
+.project-tab-active:focus-visible {
+  background: var(--nav-active-bg);
+  color: var(--nav-active-text) !important;
+  border-color: var(--nav-active-outline);
+}
+
+@media (max-width: 1100px) {
+  .panel,
+  .panel-full {
+    grid-column: 1 / -1;
+  }
+
+  .configuration-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}

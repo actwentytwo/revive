@@ -8,6 +8,7 @@ export class MongoProjectsRepository {
     const db = await getMongoDb()
     await db.collection<MigrationProjectRecord>(PROJECTS_COLLECTION).createIndexes([
       { key: { id: 1 }, name: 'projects-id', unique: true },
+      { key: { slug: 1 }, name: 'projects-slug', unique: true },
       { key: { name: 1 }, name: 'projects-name' },
     ])
   }
@@ -23,6 +24,11 @@ export class MongoProjectsRepository {
   async findById(id: string) {
     const db = await getMongoDb()
     return db.collection<MigrationProjectRecord>(PROJECTS_COLLECTION).findOne({ id })
+  }
+
+  async findBySlug(slug: string) {
+    const db = await getMongoDb()
+    return db.collection<MigrationProjectRecord>(PROJECTS_COLLECTION).findOne({ slug })
   }
 
   async count() {

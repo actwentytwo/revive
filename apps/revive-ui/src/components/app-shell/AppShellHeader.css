@@ -1,0 +1,103 @@
+.topbar {
+  padding: 18px 22px !important;
+  border-radius: 22px !important;
+  background: var(--surface-bg) !important;
+}
+
+.brand-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.brand-mark {
+  font-size: 0.86rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.brand-mark-revolution {
+  letter-spacing: 0.16em;
+}
+
+.brand-mark-accent {
+  color: var(--nav-active-bg);
+}
+
+.brand-mark-neutral {
+  color: var(--text-main);
+}
+
+.brand-logo {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  border-radius: 12px;
+  box-shadow: 0 10px 20px rgba(20, 50, 63, 0.14);
+}
+
+.brand-copy {
+  color: var(--text-soft) !important;
+}
+
+.nav-links {
+  align-items: center;
+}
+
+.project-select {
+  min-width: 220px;
+  width: 220px;
+  flex: 0 0 220px;
+}
+
+.project-select-placeholder {
+  color: var(--text-soft);
+}
+
+.nav-icon-button {
+  width: 44px;
+  height: 44px;
+  background: var(--surface-muted) !important;
+  color: var(--text-main) !important;
+  border: 1px solid transparent;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.nav-icon-button:hover {
+  background: var(--surface-muted-hover) !important;
+  border-color: var(--nav-active-outline);
+}
+
+.nav-icon-button:focus-visible {
+  outline: 2px solid var(--nav-active-bg);
+  outline-offset: 2px;
+}
+
+.nav-icon-button.active,
+.nav-icon-button[aria-current='page'] {
+  background-color: var(--nav-active-bg) !important;
+  color: var(--nav-active-text) !important;
+  border-color: var(--nav-active-outline);
+  box-shadow: inset 0 0 0 1px var(--nav-active-outline);
+}
+
+.nav-icon-button.active:hover,
+.nav-icon-button[aria-current='page']:hover {
+  background-color: var(--nav-active-bg) !important;
+  color: var(--nav-active-text) !important;
+}
+
+.nav-icon-button svg {
+  width: 20px;
+  height: 20px;
+  color: currentColor;
+}
+
+.theme-toggle {
+  background: var(--surface-muted) !important;
+  color: var(--text-main) !important;
+}

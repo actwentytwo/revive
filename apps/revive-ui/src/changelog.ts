@@ -9,15 +9,28 @@ export interface ChangeLogEntry {
 
 export const changelog: ChangeLogEntry[] = [
   {
+    version: '0.6',
+    date: '2026-06-28',
+    title: 'Shared platform configurations',
+    summary:
+      'REVOLUTION now lets teams save named platform configurations once and reuse them across projects.',
+    highlights: [
+      'Create reusable configurations such as Production, Pre-Prod, and Dev',
+      'Store product version details alongside each saved configuration',
+      'Choose source and destination configurations inside each migration project',
+    ],
+    status: 'Live',
+  },
+  {
     version: '0.5',
     date: '2026-06-27',
     title: 'Projects are now saved and reusable',
     summary:
-      'REVIVE now saves project setup through the API so operators can return to the same migration project without rebuilding it in the browser.',
+      'Projects are now saved through the API so operators can return to the same migration project without rebuilding it in the browser.',
     highlights: [
       'Projects are stored in the database instead of only in local browser storage',
-      'Saved source environment setup stays attached to each project',
-      'REVIVE now shows a dedicated API offline page when the backend is unavailable',
+      'The app shows a dedicated API offline page when the backend is unavailable',
+      'Project setup stays reusable between sessions',
     ],
     status: 'Live',
   },
@@ -36,23 +49,23 @@ export const changelog: ChangeLogEntry[] = [
   },
   {
     version: '0.3',
-    date: 'Coming soon',
+    date: 'Delivered',
     title: 'Saved environments and destination setup',
     summary:
-      'This update will make setup reusable so operators do not need to re-enter environment details each time.',
+      'Environment setup is now reusable so operators do not need to re-enter platform details for every project.',
     highlights: [
       'Save source and destination environments',
       'Prepare destination connectivity',
-      'Introduce secure credential storage',
+      'Support reusable platform setup',
     ],
-    status: 'In Progress',
+    status: 'Live',
   },
   {
-    version: '0.4',
+    version: '0.7',
     date: 'Planned',
     title: 'Single-video migration',
     summary:
-      'After environment setup is in place, REVIVE will support moving a single video and its core metadata end to end.',
+      'After shared environment setup is in place, the next step is moving a single video and its core metadata end to end.',
     highlights: [
       'Migrate a single selected video',
       'Carry title, description, tags, and categories',

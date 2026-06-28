@@ -2,20 +2,20 @@ import { z } from 'zod'
 import { TRPCError } from '@trpc/server'
 import { router, publicProcedure } from '../trpc/trpc.js'
 import {
+  assignProjectConfigurations,
   createProject,
   deleteProject,
   listProjects,
   listSourceVideosForProject,
-  validateDestinationEnvironmentForProject,
-  validateSourceEnvironmentForProject,
+  updateProject,
 } from './projects.service.js'
 import {
+  assignProjectConfigurationsInputSchema,
   createProjectInputSchema,
   deleteProjectInputSchema,
   listSourceVideosInputSchema,
   migrationProjectSchema,
-  validateDestinationEnvironmentInputSchema,
-  validateSourceEnvironmentInputSchema,
+  updateProjectInputSchema,
 } from './projects.schemas.js'
 
 function toBadRequest(error: unknown, fallbackMessage: string) {
@@ -37,6 +37,16 @@ export const projectsRouter = router({
         throw toBadRequest(error, 'Failed to create project')
       }
     }),
+  update: publicProcedure
+    .input(updateProjectInputSchema)
+    .output(migrationProjectSchema)
+    .mutation(async ({ input }) => {
+      try {
+        return await updateProject(input)
+      } catch (error) {
+        throw toBadRequest(error, 'Failed to update project')
+      }
+    }),
   delete: publicProcedure
     .input(deleteProjectInputSchema)
     .output(z.object({ deleted: z.boolean(), projectId: z.string().min(1) }))
@@ -47,24 +57,14 @@ export const projectsRouter = router({
         throw toBadRequest(error, 'Failed to delete project')
       }
     }),
-  validateSourceEnvironment: publicProcedure
-    .input(validateSourceEnvironmentInputSchema)
+  assignConfigurations: publicProcedure
+    .input(assignProjectConfigurationsInputSchema)
     .output(migrationProjectSchema)
     .mutation(async ({ input }) => {
       try {
-        return await validateSourceEnvironmentForProject(input)
+        return await assignProjectConfigurations(input)
       } catch (error) {
-        throw toBadRequest(error, 'Failed to validate Rev environment')
-      }
-    }),
-  validateDestinationEnvironment: publicProcedure
-    .input(validateDestinationEnvironmentInputSchema)
-    .output(migrationProjectSchema)
-    .mutation(async ({ input }) => {
-      try {
-        return await validateDestinationEnvironmentForProject(input)
-      } catch (error) {
-        throw toBadRequest(error, 'Failed to validate destination Rev environment')
+        throw toBadRequest(error, 'Failed to update project configuration')
       }
     }),
   listSourceVideos: publicProcedure

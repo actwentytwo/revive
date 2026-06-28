@@ -22,6 +22,7 @@ Source environment details are now stored per project in MongoDB. The backend st
 ```bash
 pnpm install
 cp apps/revive-api/.env.example apps/revive-api/.env
+cp apps/revive-ui/.env.example apps/revive-ui/.env
 pnpm dev
 ```
 
@@ -34,6 +35,11 @@ Set these environment variables before starting the API:
 - `MONGODB_DB_NAME`
 
 The API reads them from `apps/revive-api/.env`.
+
+The UI reads optional Vite settings from `apps/revive-ui/.env`.
+
+- `VITE_VBRICK_VERSIONS`
+  Example: `VITE_VBRICK_VERSIONS=v6.0,v7.3,v8.1,v8.6`
 
 For the current local Docker-backed Mongo setup, use an authenticated URI like:
 

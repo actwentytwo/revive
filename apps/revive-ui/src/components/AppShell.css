@@ -1,0 +1,12 @@
+.app-shell {
+  padding-block: 32px 84px;
+}
+
+.loading-slot {
+  min-height: 4px;
+}
+
+.theme-root {
+  min-height: 100vh;
+  color: var(--text-main);
+}

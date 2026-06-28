@@ -1,4 +1,5 @@
 export type RevAuthType = 'apiKey' | 'userPassword'
+export type ProjectType = 'migration'
 
 export type RevEnvironmentInput =
   | {
@@ -21,14 +22,24 @@ export interface RevEnvironmentValidation {
   validatedAt: string
 }
 
-export interface MigrationProject {
+export interface SavedConfiguration {
   id: string
   name: string
+  productVersion: string
+  environment: RevEnvironmentInput
+  validatedEnvironment: RevEnvironmentValidation | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface MigrationProject {
+  id: string
+  slug: string
+  name: string
+  projectType: ProjectType
   summary: string
-  sourceEnvironment: RevEnvironmentInput | null
-  sourceValidatedEnvironment: RevEnvironmentValidation | null
-  destinationEnvironment: RevEnvironmentInput | null
-  destinationValidatedEnvironment: RevEnvironmentValidation | null
+  sourceConfigurationId: string | null
+  destinationConfigurationId: string | null
   createdAt: string
   updatedAt: string
 }

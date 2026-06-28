@@ -8,8 +8,9 @@ import {
 import {
   AppShell,
   ChangeLogPageRoute,
+  ConfigurationWorkspacePageRoute,
   ConfigurationPageRoute,
-  DefaultProjectHomeRoute,
+  HomeRoute,
   OverviewPageRoute,
   ProjectsPageRoute,
   ProjectWorkspaceRoute,
@@ -19,16 +20,17 @@ import {
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route element={<AppShell />}>
-      <Route index element={<DefaultProjectHomeRoute />} />
+      <Route index element={<HomeRoute />} />
       <Route path="/projects" element={<ProjectsPageRoute />} />
-      <Route path="/project" element={<ProjectWorkspaceRoute />}>
-        <Route index element={<Navigate to="/project/overview" replace />} />
+      <Route path="/configuration" element={<ConfigurationWorkspacePageRoute />} />
+      <Route path="/project/:projectSlug" element={<ProjectWorkspaceRoute />}>
+        <Route index element={<Navigate to="overview" replace />} />
         <Route path="overview" element={<OverviewPageRoute />} />
         <Route path="configuration" element={<ConfigurationPageRoute />} />
         <Route path="videos" element={<VideosPageRoute />} />
       </Route>
       <Route path="/changelog" element={<ChangeLogPageRoute />} />
-      <Route path="*" element={<Navigate to="/projects" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Route>,
   ),
 )
