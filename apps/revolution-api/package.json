@@ -1,0 +1,38 @@
+{
+  "name": "@revolution/api",
+  "private": true,
+  "version": "0.1.1",
+  "type": "module",
+  "exports": {
+    "./router": "./src/router.ts"
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc --noEmit -p tsconfig.json",
+    "lint": "tsc --noEmit -p tsconfig.json",
+    "lint:fix": "pnpm run lint",
+    "test": "node -e \"console.log('No API tests configured yet')\"",
+    "test:unit": "node -e \"console.log('No API unit tests configured yet')\"",
+    "test:integration": "node -e \"console.log('No API integration tests configured yet')\"",
+    "dev:mongo:check": "bash ../../scripts/check-dev-mongo.sh --port-only",
+    "dev:mongo:check:full": "bash ../../scripts/check-dev-mongo.sh"
+  },
+  "dependencies": {
+    "mongodb": "^6.18.0",
+    "@revolution/shared": "workspace:*",
+    "@trpc/server": "^11.7.1",
+    "@vbrick/rev-client": "^0.25.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0",
+    "superjson": "^2.2.2",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "tsx": "^4.20.6",
+    "typescript": "^6.0.2"
+  }
+}

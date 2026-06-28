@@ -1,0 +1,37 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", "build/**"]
+    },
+    "check": {
+      "dependsOn": ["^check"],
+      "outputs": []
+    },
+    "lint": {
+      "dependsOn": ["^lint"],
+      "outputs": []
+    },
+    "lint:fix": {
+      "cache": false,
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": ["^test"],
+      "outputs": []
+    },
+    "test:unit": {
+      "dependsOn": ["^test:unit"],
+      "outputs": []
+    },
+    "test:integration": {
+      "dependsOn": ["^test:integration"],
+      "outputs": []
+    }
+  }
+}

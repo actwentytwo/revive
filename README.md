@@ -2,8 +2,8 @@
 
 REVIVE is a greenfield Vbrick Rev migration tool scaffolded from the supplied requirements document. The current foundation is intentionally focused on a real integration slice:
 
-- `apps/revive-ui`: React + TypeScript + Material UI operator console
-- `apps/revive-api`: Node + Express + tRPC backend
+- `apps/revolution-ui`: React + TypeScript + Material UI operator console
+- `apps/revolution-api`: Node + Express + tRPC backend
 - `packages/shared`: shared migration domain types
 
 ## What is implemented
@@ -21,8 +21,9 @@ Source environment details are now stored per project in MongoDB. The backend st
 
 ```bash
 pnpm install
-cp apps/revive-api/.env.example apps/revive-api/.env
-cp apps/revive-ui/.env.example apps/revive-ui/.env
+cp apps/revolution-api/.env.example apps/revolution-api/.env
+cp apps/revolution-ui/.env.example apps/revolution-ui/.env
+pnpm dev:mongo:check:full
 pnpm dev
 ```
 
@@ -34,16 +35,21 @@ Set these environment variables before starting the API:
 - `MONGODB_URI`
 - `MONGODB_DB_NAME`
 
-The API reads them from `apps/revive-api/.env`.
+The API reads them from `apps/revolution-api/.env`.
 
-The UI reads optional Vite settings from `apps/revive-ui/.env`.
+The UI reads optional Vite settings from `apps/revolution-ui/.env`.
 
 - `VITE_VBRICK_VERSIONS`
   Example: `VITE_VBRICK_VERSIONS=v6.0,v7.3,v8.1,v8.6`
 
 For the current local Docker-backed Mongo setup, use an authenticated URI like:
 
-- `MONGODB_URI=mongodb://revive:replace-me@127.0.0.1:27017/revive?authSource=revive&directConnection=true`
+- `MONGODB_URI=mongodb://revolution:replace-me@127.0.0.1:27017/revolution?authSource=revolution&directConnection=true`
+
+To match Raven/TAP local workflow, use these checks before starting the API:
+
+- `pnpm dev:mongo:check` for TCP connectivity only.
+- `pnpm dev:mongo:check:full` for authenticated Mongo ping using `MONGODB_URI`.
 
 ## Suggested next steps
 

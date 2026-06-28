@@ -1,7 +1,7 @@
 {
-  "name": "@revive/shared",
+  "name": "@revolution/shared",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"
@@ -9,7 +9,12 @@
   "types": "./src/index.ts",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "lint": "tsc --noEmit -p tsconfig.json"
+    "check": "tsc --noEmit -p tsconfig.json",
+    "lint": "tsc --noEmit -p tsconfig.json",
+    "lint:fix": "pnpm run lint",
+    "test": "node -e \"console.log('No shared tests configured yet')\"",
+    "test:unit": "node -e \"console.log('No shared unit tests configured yet')\"",
+    "test:integration": "node -e \"console.log('No shared integration tests configured yet')\""
   },
   "devDependencies": {
     "typescript": "^6.0.2"
