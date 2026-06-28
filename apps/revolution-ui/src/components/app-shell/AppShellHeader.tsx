@@ -40,6 +40,8 @@ export function AppShellHeader({
   onToggleMode,
   projects,
 }: AppShellHeaderProps) {
+  const hasActiveProject = activeProjectId.length > 0;
+
   return (
     <Paper className="topbar">
       <Stack
@@ -86,8 +88,8 @@ export function AppShellHeader({
           </Tooltip>
 
           <FormControl size="small" className="project-select">
-            <InputLabel id="project-select-label" shrink={Boolean(activeProjectId)}>
-              {Boolean(activeProjectId)
+            <InputLabel id="project-select-label" shrink={hasActiveProject}>
+              {hasActiveProject
                 ? "Project"
                 : projects.length === 0
                   ? "No Projects"
@@ -96,7 +98,7 @@ export function AppShellHeader({
             <Select
               labelId="project-select-label"
               value={activeProjectId}
-              notched={Boolean(activeProjectId)}
+              notched={hasActiveProject}
               label="Project"
               displayEmpty
               disabled={projects.length === 0}

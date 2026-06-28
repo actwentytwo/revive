@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import { router, publicProcedure } from "../trpc/trpc.js";
+import { toBadRequest } from "../trpc/errors.js";
 import {
   createConfiguration,
   deleteConfiguration,
@@ -15,13 +15,6 @@ import {
   updateConfigurationInputSchema,
   validateConfigurationInputSchema,
 } from "./configurations.schemas.js";
-
-function toBadRequest(error: unknown, fallbackMessage: string) {
-  return new TRPCError({
-    code: "BAD_REQUEST",
-    message: error instanceof Error ? error.message : fallbackMessage,
-  });
-}
 
 export function createConfigurationsRouter(options: {
   isConfigurationInUse: (configurationId: string) => Promise<boolean>;

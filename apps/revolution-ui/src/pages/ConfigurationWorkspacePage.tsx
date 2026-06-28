@@ -25,13 +25,15 @@ import {
   ConfigurationSummaryPanel,
   PageIntroWithIcon,
   PanelTitle,
+} from "../components/shared/PageChrome";
+import {
   emptyConfigurationFormState,
   formStateFromConfiguration,
   getErrorMessage,
   isConfigurationFormReady,
-  type ConfigurationFormState,
   normalizeVbrickVersion,
-} from "../components/shared/PageChrome";
+  type ConfigurationFormState,
+} from "../components/shared/pageChrome.helpers";
 
 type ConfigurationWorkspacePageProps = {
   activeConfiguration: SavedConfiguration | undefined;

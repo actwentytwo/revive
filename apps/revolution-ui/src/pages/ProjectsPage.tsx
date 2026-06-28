@@ -14,7 +14,8 @@ import {
 } from "@mui/material";
 import type { MigrationProject, SavedConfiguration } from "@revolution/shared";
 import { useNavigate } from "react-router-dom";
-import { PageIntro, formatProjectType } from "../components/shared/PageChrome";
+import { PageIntro } from "../components/shared/PageChrome";
+import { formatProjectType } from "../components/shared/pageChrome.helpers";
 import "./ProjectsPage.css";
 
 type ProjectsPageProps = {

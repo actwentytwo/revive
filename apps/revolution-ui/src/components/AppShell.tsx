@@ -40,12 +40,15 @@ import {
 import { AppFooter } from "./app-shell/AppFooter";
 import { AppShellHeader } from "./app-shell/AppShellHeader";
 import {
-  ProjectWorkspaceTitle,
   compareVersionsDescending,
-  type ConfigurationFormState,
   configurationFormToEnvironment,
+  type ConfigurationFormState,
+} from "./shared/pageChrome.helpers";
+import {
+  ApiOfflinePage,
+  ChangeLogPage,
+  ProjectWorkspaceTitle,
 } from "../components/shared/PageChrome";
-import { ApiOfflinePage, ChangeLogPage } from "../components/shared/PageChrome";
 import { OverviewPage } from "../pages/OverviewPage";
 import { ProjectConfigurationPage } from "../pages/ProjectConfigurationPage";
 import { ProjectsPage } from "../pages/ProjectsPage";
@@ -197,7 +200,7 @@ export function AppShell() {
   const updateConfigurationMutation = trpc.configurations.update.useMutation();
   const validateConfigurationMutation = trpc.configurations.validate.useMutation();
   const deleteConfigurationMutation = trpc.configurations.delete.useMutation();
-  const videosMutation = trpc.projects.listSourceVideos.useMutation();
+  const videosMutation = trpc.videos.listSource.useMutation();
 
   const projects = useMemo(() => projectsQuery.data ?? [], [projectsQuery.data]);
   const configurations = useMemo(() => configurationsQuery.data ?? [], [configurationsQuery.data]);

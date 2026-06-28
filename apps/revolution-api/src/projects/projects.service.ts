@@ -1,10 +1,8 @@
-import type { MigrationProject, SourceVideoPage } from "@revolution/shared";
+import type { MigrationProject } from "@revolution/shared";
 import {
   ensureConfigurationsBootstrapped,
-  listConfigurations,
   createConfiguration,
 } from "../configurations/configurations.service.js";
-import { RevService } from "../rev-service.js";
 import { MongoProjectsRepository } from "./projects.repository.js";
 import type {
   AssignProjectConfigurationsInput,
@@ -16,7 +14,6 @@ import type {
 const SYSTEM_ACTOR = "system";
 
 const projectsRepository = new MongoProjectsRepository();
-const revService = new RevService();
 
 let bootstrapPromise: Promise<void> | null = null;
 
@@ -154,6 +151,10 @@ async function getProjectRecordOrThrow(projectId: string) {
   return project;
 }
 
+export async function getProjectRecordById(projectId: string) {
+  return getProjectRecordOrThrow(projectId);
+}
+
 async function generateProjectId(name: string) {
   const baseId = slugify(name) || "project";
   let candidateId = baseId;
@@ -257,32 +258,6 @@ export async function assignProjectConfigurations(input: AssignProjectConfigurat
 
   await projectsRepository.replace(updatedProject);
   return toProject(updatedProject);
-}
-
-export async function listSourceVideosForProject(args: {
-  projectId: string;
-  search?: string;
-  page: number;
-  pageSize: number;
-}): Promise<SourceVideoPage> {
-  const project = await getProjectRecordOrThrow(args.projectId);
-  const configurations = await listConfigurations();
-  const sourceConfiguration = configurations.find(
-    (configuration) => configuration.id === project.sourceConfigurationId,
-  );
-
-  const sourceEnvironment = sourceConfiguration?.environment ?? project.sourceEnvironment ?? null;
-
-  if (!sourceEnvironment) {
-    throw new Error("This project does not have a saved source configuration yet.");
-  }
-
-  return revService.listVideos({
-    environment: sourceEnvironment,
-    search: args.search,
-    page: args.page,
-    pageSize: args.pageSize,
-  });
 }
 
 export async function isConfigurationInUse(configurationId: string) {

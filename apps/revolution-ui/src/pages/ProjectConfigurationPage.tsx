@@ -12,12 +12,8 @@ import {
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import type { MigrationProject, SavedConfiguration } from "@revolution/shared";
-import {
-  ConfigurationSummaryPanel,
-  PageIntro,
-  PanelTitle,
-  formatConfigurationLabel,
-} from "../components/shared/PageChrome";
+import { ConfigurationSummaryPanel, PageIntro, PanelTitle } from "../components/shared/PageChrome";
+import { formatConfigurationLabel } from "../components/shared/pageChrome.helpers";
 
 type ProjectConfigurationPageProps = {
   activeProject: MigrationProject | undefined;

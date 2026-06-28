@@ -2,14 +2,8 @@ import CloudDoneRounded from "@mui/icons-material/CloudDoneRounded";
 import DashboardRounded from "@mui/icons-material/DashboardRounded";
 import { Alert, Paper, Stack } from "@mui/material";
 import type { MigrationProject, SavedConfiguration } from "@revolution/shared";
-import {
-  Fact,
-  MetricPill,
-  PageIntro,
-  PanelTitle,
-  formatProjectType,
-  formatTimestamp,
-} from "../components/shared/PageChrome";
+import { Fact, MetricPill, PageIntro, PanelTitle } from "../components/shared/PageChrome";
+import { formatProjectType, formatTimestamp } from "../components/shared/pageChrome.helpers";
 
 type OverviewPageProps = {
   activeProject: MigrationProject | undefined;

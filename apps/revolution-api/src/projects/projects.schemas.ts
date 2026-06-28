@@ -51,16 +51,8 @@ export const assignProjectConfigurationsInputSchema = z.object({
   destinationConfigurationId: z.string().trim().min(1).nullable(),
 });
 
-export const listSourceVideosInputSchema = z.object({
-  projectId: z.string().trim().min(1),
-  search: z.string().trim().optional(),
-  page: z.number().int().min(0).default(0),
-  pageSize: z.number().int().min(1).max(100).default(25),
-});
-
 export type CreateProjectInput = z.infer<typeof createProjectInputSchema>;
 export type DeleteProjectInput = z.infer<typeof deleteProjectInputSchema>;
-export type ListSourceVideosInput = z.infer<typeof listSourceVideosInputSchema>;
 export type MigrationProjectRecord = z.infer<typeof migrationProjectRecordSchema>;
 export type AssignProjectConfigurationsInput = z.infer<
   typeof assignProjectConfigurationsInputSchema
