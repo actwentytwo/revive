@@ -12,20 +12,20 @@ Bring Revolution in line with Raven engineering standards for tooling, structure
 
 ## Parity Matrix
 
-| Area                    | Current Revolution State                                                     | Raven Target State                                                                | Decision             | Priority |
-| ----------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | -------------------- | -------- |
-| Workspace orchestration | `pnpm -r` scripts only                                                       | Turbo-based root orchestration with scoped filters                                | Must match Raven     | P0       |
-| Root scripts            | minimal (`dev`, `build`, `lint`)                                             | full standard set (`check`, `lint:fix`, `test*`, `format*`, targeted `dev:*`)     | Must match Raven     | P0       |
-| Formatting + pre-commit | no root Prettier/lint-staged/husky                                           | Prettier + `format:check` + husky/lint-staged                                     | Must match Raven     | P0       |
-| CI gates                | not standardized yet                                                         | lint/check/test/format gates via CI                                               | Must match Raven     | P0       |
-| Versioning              | inconsistent package versions (`0.1.1` root, `0.1.0` API/shared, `0.0.1` UI) | aligned root/API/UI version with version check script                             | Must match Raven     | P0       |
-| Release docs            | no formal release process docs                                               | single lightweight changelog + tagged release flow with commit-hash traceability  | Adapt for Revolution | P1       |
-| Repo conventions        | no local `AGENTS.md` yet                                                     | repo-level instructions plus shared conventions linkage                           | Must match Raven     | P1       |
-| UI architecture         | basic page/component split                                                   | route composition points, thin pages, reusable shell/components/hooks             | Must match Raven     | P1       |
-| API architecture        | good base pattern present                                                    | consistent schema/repository/service/router + boundary validation + error mapping | Must match Raven     | P1       |
-| Testing strategy        | no parity-grade unit/integration layout                                      | app-level unit + integration scripts and coverage expectations                    | Must match Raven     | P1       |
-| Dev docs structure      | minimal docs                                                                 | structured docs (development/release/ops notes as needed)                         | Adapt for Revolution | P2       |
-| Ops/deploy tooling      | not equivalent yet                                                           | only add what Revolution actually needs now                                       | Adapt for Revolution | P2       |
+| Area                    | Current Revolution State                              | Raven Target State                                                                | Decision             | Priority |
+| ----------------------- | ----------------------------------------------------- | --------------------------------------------------------------------------------- | -------------------- | -------- |
+| Workspace orchestration | `pnpm -r` scripts only                                | Turbo-based root orchestration with scoped filters                                | Must match Raven     | P0       |
+| Root scripts            | minimal (`dev`, `build`, `lint`)                      | full standard set (`check`, `lint:fix`, `test*`, `format*`, targeted `dev:*`)     | Must match Raven     | P0       |
+| Formatting + pre-commit | no root Prettier/lint-staged/husky                    | Prettier + `format:check` + husky/lint-staged                                     | Must match Raven     | P0       |
+| CI gates                | not standardized yet                                  | lint/check/test/format gates via CI                                               | Must match Raven     | P0       |
+| Versioning              | aligned package versions (`0.2.0` root/API/UI/shared) | aligned root/API/UI version with version check script                             | Must match Raven     | P0       |
+| Release docs            | no formal release process docs                        | single lightweight changelog + tagged release flow with commit-hash traceability  | Adapt for Revolution | P1       |
+| Repo conventions        | no local `AGENTS.md` yet                              | repo-level instructions plus shared conventions linkage                           | Must match Raven     | P1       |
+| UI architecture         | basic page/component split                            | route composition points, thin pages, reusable shell/components/hooks             | Must match Raven     | P1       |
+| API architecture        | good base pattern present                             | consistent schema/repository/service/router + boundary validation + error mapping | Must match Raven     | P1       |
+| Testing strategy        | no parity-grade unit/integration layout               | app-level unit + integration scripts and coverage expectations                    | Must match Raven     | P1       |
+| Dev docs structure      | minimal docs                                          | structured docs (development/release/ops notes as needed)                         | Adapt for Revolution | P2       |
+| Ops/deploy tooling      | not equivalent yet                                    | only add what Revolution actually needs now                                       | Adapt for Revolution | P2       |
 
 ## Execution Plan
 
@@ -61,10 +61,10 @@ Bring Revolution in line with Raven engineering standards for tooling, structure
 
 ### Phase 4: Hardening and Cleanup
 
-- [ ] Remove obsolete scripts/config once parity path is stable.
-- [ ] Normalize docs and onboarding instructions.
-- [ ] Validate end-to-end dev workflow from clean clone.
-- [ ] Cut parity milestone release and tag.
+- [x] Remove obsolete scripts/config once parity path is stable.
+- [x] Normalize docs and onboarding instructions.
+- [x] Validate end-to-end dev workflow from clean clone.
+- [x] Cut parity milestone release and tag.
 
 ## First Work Chunk (Recommended)
 

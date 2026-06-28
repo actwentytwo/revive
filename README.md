@@ -1,6 +1,6 @@
-# REVIVE
+# REVOLUTION
 
-REVIVE is a greenfield Vbrick Rev migration tool scaffolded from the supplied requirements document. The current foundation is intentionally focused on a real integration slice:
+REVOLUTION is a greenfield Vbrick Rev migration tool scaffolded from the supplied requirements document. The current foundation is intentionally focused on a real integration slice:
 
 - `apps/revolution-ui`: React + TypeScript + Material UI operator console
 - `apps/revolution-api`: Node + Express + tRPC backend
@@ -70,6 +70,10 @@ To match Raven/TAP local workflow, use these checks before starting the API:
 - `pnpm test:unit` runs unit suites.
 - `pnpm test:integration` runs integration suites.
 - See [docs/testing-policy.md](docs/testing-policy.md) for layout and coverage policy.
+
+## Documentation index
+
+- See [docs/README.md](docs/README.md) for development, release, and parity docs.
 
 ## Suggested next steps
 

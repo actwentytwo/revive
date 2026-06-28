@@ -10,6 +10,22 @@ export interface ChangeLogEntry {
 
 export const changelog: ChangeLogEntry[] = [
   {
+    version: "0.2.0",
+    date: "2026-06-29",
+    title: "Raven parity milestone release",
+    summary:
+      "REVOLUTION now ships with Raven-aligned engineering guardrails, CI quality gates, structured test suites, and documented release boundaries.",
+    highlights: [
+      "Turbo-based workspace orchestration with unified check/lint/test/format/version workflows",
+      "Prettier + Husky + lint-staged standards with CI gate enforcement",
+      "UI/API architecture refactors and dedicated videos domain module",
+      "Unit and integration test layout for API and UI with baseline coverage thresholds",
+      "Shared-package boundary guardrails with automated enforcement",
+    ],
+    commitRefs: ["fc51824", "a0d95df", "1195abd", "e5eeba4", "34c7976"],
+    status: "Live",
+  },
+  {
     version: "0.6",
     date: "2026-06-28",
     title: "Shared platform configurations",
