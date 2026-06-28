@@ -22,7 +22,7 @@
   --hero-card-text-soft: rgba(20, 50, 63, 0.72);
 }
 
-[data-theme='dark'] {
+[data-theme="dark"] {
   --shell-bg:
     radial-gradient(circle at top left, rgba(86, 154, 190, 0.22), transparent 28%),
     linear-gradient(180deg, #101a1f 0%, #122129 40%, #0f171d 100%);

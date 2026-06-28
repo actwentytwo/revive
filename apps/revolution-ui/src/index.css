@@ -1,9 +1,9 @@
-@import '@fontsource/space-grotesk/400.css';
-@import '@fontsource/space-grotesk/700.css';
-@import '@fontsource/ibm-plex-mono/400.css';
+@import "@fontsource/space-grotesk/400.css";
+@import "@fontsource/space-grotesk/700.css";
+@import "@fontsource/ibm-plex-mono/400.css";
 
 :root {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: "Space Grotesk", sans-serif;
   line-height: 1.5;
   font-weight: 400;
   color: var(--text-main, #16313c);
@@ -34,5 +34,5 @@ body {
 }
 
 code {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: "IBM Plex Mono", monospace;
 }

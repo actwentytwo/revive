@@ -33,8 +33,7 @@
     inset 0 0 0 1px var(--nav-active-bg),
     0 12px 30px rgba(20, 50, 63, 0.14);
   background:
-    linear-gradient(135deg, rgba(20, 50, 63, 0.08), transparent 45%),
-    var(--surface-bg) !important;
+    linear-gradient(135deg, rgba(20, 50, 63, 0.08), transparent 45%), var(--surface-bg) !important;
 }
 
 .empty-state {
