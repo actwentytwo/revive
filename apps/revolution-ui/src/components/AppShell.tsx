@@ -1,23 +1,11 @@
 import { useDeferredValue, useEffect, useEffectEvent, useMemo, useState } from "react";
 import {
-  Alert,
   Box,
-  Button,
   Container,
   CssBaseline,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControl,
-  InputLabel,
   LinearProgress,
-  MenuItem,
   Paper,
-  Select,
-  Snackbar,
   Stack,
-  TextField,
   ThemeProvider,
   Typography,
   createTheme,
@@ -39,6 +27,8 @@ import {
 } from "react-router-dom";
 import { AppFooter } from "./app-shell/AppFooter";
 import { AppShellHeader } from "./app-shell/AppShellHeader";
+import { AppNoticeSnackbar } from "./app-shell/AppNoticeSnackbar";
+import { ProjectDialogs } from "./app-shell/ProjectDialogs";
 import {
   compareVersionsDescending,
   configurationFormToEnvironment,
@@ -646,194 +636,51 @@ export function AppShell() {
 
         <AppFooter currentVersion={currentVersion} />
 
-        <Dialog
-          open={isCreateDialogOpen}
-          onClose={() => setIsCreateDialogOpen(false)}
-          fullWidth
-          maxWidth="sm"
-        >
-          <DialogTitle>Create a New Project</DialogTitle>
-          <DialogContent>
-            <Stack spacing={2} pt={1}>
-              <TextField
-                label="Project name"
-                placeholder="New Pre-Prod Rollout"
-                value={newProjectName}
-                onChange={(event) => setNewProjectName(event.target.value)}
-                fullWidth
-                autoFocus
-              />
-              <TextField
-                label="Project slug"
-                helperText="Generated automatically from the project name."
-                value={generatedProjectSlug}
-                disabled
-                fullWidth
-              />
-              <FormControl fullWidth>
-                <InputLabel id="project-type-label">Project type</InputLabel>
-                <Select
-                  labelId="project-type-label"
-                  value={newProjectType}
-                  label="Project type"
-                  onChange={(event) => setNewProjectType(event.target.value as ProjectType)}
-                >
-                  <MenuItem value="migration">Migration</MenuItem>
-                </Select>
-              </FormControl>
-              <TextField
-                label="Summary"
-                placeholder="Describe what this project is for."
-                value={newProjectSummary}
-                onChange={(event) => setNewProjectSummary(event.target.value)}
-                fullWidth
-                multiline
-                minRows={4}
-              />
-            </Stack>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setIsCreateDialogOpen(false)}>Cancel</Button>
-            <Button
-              variant="contained"
-              onClick={() => void handleCreateProject()}
-              disabled={!newProjectName.trim() || createProjectMutation.isPending}
-            >
-              Create project
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        <Dialog
-          open={isEditProjectDialogOpen}
-          onClose={() => {
-            setIsEditProjectDialogOpen(false);
-            setEditProjectError(null);
+        <ProjectDialogs
+          projects={projects}
+          create={{
+            isOpen: isCreateDialogOpen,
+            name: newProjectName,
+            generatedSlug: generatedProjectSlug,
+            summary: newProjectSummary,
+            projectType: newProjectType,
+            isPending: createProjectMutation.isPending,
+            onClose: () => setIsCreateDialogOpen(false),
+            onNameChange: setNewProjectName,
+            onSummaryChange: setNewProjectSummary,
+            onProjectTypeChange: setNewProjectType,
+            onSubmit: () => void handleCreateProject(),
           }}
-          fullWidth
-          maxWidth="sm"
-        >
-          <DialogTitle>Edit Project</DialogTitle>
-          <DialogContent>
-            <Stack spacing={2} pt={1}>
-              {editProjectError ? <Alert severity="error">{editProjectError}</Alert> : null}
-              <TextField
-                label="Project name"
-                value={editProjectName}
-                onChange={(event) => setEditProjectName(event.target.value)}
-                fullWidth
-                autoFocus
-              />
-              <TextField
-                label="Project slug"
-                helperText="Used in the project URL."
-                value={editProjectSlug}
-                onChange={(event) => setEditProjectSlug(event.target.value)}
-                fullWidth
-              />
-              <TextField
-                label="Summary"
-                value={editProjectSummary}
-                onChange={(event) => setEditProjectSummary(event.target.value)}
-                fullWidth
-                multiline
-                minRows={4}
-              />
-            </Stack>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={() => {
-                setIsEditProjectDialogOpen(false);
-                setEditProjectError(null);
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="contained"
-              disabled={
-                updateProjectMutation.isPending ||
-                !editProjectName.trim() ||
-                !editProjectSummary.trim() ||
-                (editProjectId
-                  ? editProjectName.trim() ===
-                      projects.find((project) => project.id === editProjectId)?.name.trim() &&
-                    editProjectSlug.trim() ===
-                      projects.find((project) => project.id === editProjectId)?.slug.trim() &&
-                    editProjectSummary.trim() ===
-                      projects.find((project) => project.id === editProjectId)?.summary.trim()
-                  : true)
-              }
-              onClick={() => void handleSaveProjectEdit()}
-            >
-              Save changes
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        <Dialog
-          open={isDeleteProjectDialogOpen}
-          onClose={() => {
-            setIsDeleteProjectDialogOpen(false);
-            setDeleteProjectId("");
+          edit={{
+            isOpen: isEditProjectDialogOpen,
+            projectId: editProjectId,
+            name: editProjectName,
+            slug: editProjectSlug,
+            summary: editProjectSummary,
+            error: editProjectError,
+            isPending: updateProjectMutation.isPending,
+            onClose: () => {
+              setIsEditProjectDialogOpen(false);
+              setEditProjectError(null);
+            },
+            onNameChange: setEditProjectName,
+            onSlugChange: setEditProjectSlug,
+            onSummaryChange: setEditProjectSummary,
+            onSubmit: () => void handleSaveProjectEdit(),
           }}
-          fullWidth
-          maxWidth="sm"
-        >
-          <DialogTitle>Delete Project</DialogTitle>
-          <DialogContent>
-            <Stack spacing={1.5} pt={1}>
-              <Typography>
-                Are you sure you want to delete{" "}
-                <strong>
-                  {projects.find((project) => project.id === deleteProjectId)?.name ??
-                    "this project"}
-                </strong>
-                ?
-              </Typography>
-              <Alert severity="warning">
-                This will permanently remove the project and its configuration links. This cannot be
-                undone.
-              </Alert>
-            </Stack>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={() => {
-                setIsDeleteProjectDialogOpen(false);
-                setDeleteProjectId("");
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="contained"
-              color="error"
-              onClick={() => void handleConfirmDeleteProject()}
-              disabled={deleteProjectMutation.isPending || !deleteProjectId}
-            >
-              Delete project
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        <Snackbar
-          open={Boolean(appNotice)}
-          autoHideDuration={6000}
-          onClose={(_event, reason) => {
-            if (reason === "clickaway") {
-              return;
-            }
-
-            setAppNotice(null);
+          remove={{
+            isOpen: isDeleteProjectDialogOpen,
+            projectId: deleteProjectId,
+            isPending: deleteProjectMutation.isPending,
+            onClose: () => {
+              setIsDeleteProjectDialogOpen(false);
+              setDeleteProjectId("");
+            },
+            onSubmit: () => void handleConfirmDeleteProject(),
           }}
-          anchorOrigin={{ vertical: "top", horizontal: "center" }}
-        >
-          <Alert onClose={() => setAppNotice(null)} severity="error" variant="filled">
-            {appNotice}
-          </Alert>
-        </Snackbar>
+        />
+
+        <AppNoticeSnackbar message={appNotice} onClose={() => setAppNotice(null)} />
       </div>
     </ThemeProvider>
   );

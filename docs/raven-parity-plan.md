@@ -47,7 +47,7 @@ Bring Revolution in line with Raven engineering standards for tooling, structure
 ### Phase 2: Architecture Parity
 
 - [x] UI: enforce thin page composition pattern and move reusable logic to hooks/components.
-- [ ] UI: standardize app shell and shared dialog/feedback/grid primitives where applicable.
+- [x] UI: standardize app shell and shared dialog/feedback/grid primitives where applicable.
 - [x] API: normalize module shape (schema -> repository -> service -> router) across all domains.
 - [x] API: standardize TRPC/OpenAPI metadata and error conversion patterns.
 - [ ] Shared package: confirm framework-agnostic boundaries and contract ownership.
