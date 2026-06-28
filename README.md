@@ -58,6 +58,12 @@ To match Raven/TAP local workflow, use these checks before starting the API:
 - Tag release commits with `vX.Y.Z`
 - See [docs/release-process.md](docs/release-process.md) for full details
 
+## Shared contracts boundary
+
+- `packages/shared` is reserved for framework-agnostic cross-app contracts.
+- Validate boundary rules with `pnpm boundary:check` (also included in `pnpm check`).
+- See [docs/shared-package-boundary.md](docs/shared-package-boundary.md).
+
 ## Suggested next steps
 
 1. Add destination environment persistence and validation for each project.
