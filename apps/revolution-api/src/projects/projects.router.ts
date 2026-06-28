@@ -2,6 +2,13 @@ import { z } from "zod";
 import { router, publicProcedure } from "../trpc/trpc.js";
 import { toBadRequest } from "../trpc/errors.js";
 import {
+  assignProjectConfigurationsOpenApiMeta,
+  createProjectOpenApiMeta,
+  deleteProjectOpenApiMeta,
+  listProjectsOpenApiMeta,
+  updateProjectOpenApiMeta,
+} from "./projects.openapi.js";
+import {
   assignProjectConfigurations,
   createProject,
   deleteProject,
@@ -17,8 +24,13 @@ import {
 } from "./projects.schemas.js";
 
 export const projectsRouter = router({
-  list: publicProcedure.output(migrationProjectSchema.array()).query(async () => listProjects()),
+  list: publicProcedure
+    .meta(listProjectsOpenApiMeta)
+    .input(z.object({}).optional())
+    .output(migrationProjectSchema.array())
+    .query(async () => listProjects()),
   create: publicProcedure
+    .meta(createProjectOpenApiMeta)
     .input(createProjectInputSchema)
     .output(migrationProjectSchema)
     .mutation(async ({ input }) => {
@@ -29,6 +41,7 @@ export const projectsRouter = router({
       }
     }),
   update: publicProcedure
+    .meta(updateProjectOpenApiMeta)
     .input(updateProjectInputSchema)
     .output(migrationProjectSchema)
     .mutation(async ({ input }) => {
@@ -39,6 +52,7 @@ export const projectsRouter = router({
       }
     }),
   delete: publicProcedure
+    .meta(deleteProjectOpenApiMeta)
     .input(deleteProjectInputSchema)
     .output(z.object({ deleted: z.boolean(), projectId: z.string().min(1) }))
     .mutation(async ({ input }) => {
@@ -49,6 +63,7 @@ export const projectsRouter = router({
       }
     }),
   assignConfigurations: publicProcedure
+    .meta(assignProjectConfigurationsOpenApiMeta)
     .input(assignProjectConfigurationsInputSchema)
     .output(migrationProjectSchema)
     .mutation(async ({ input }) => {

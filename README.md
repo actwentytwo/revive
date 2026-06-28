@@ -29,6 +29,8 @@ pnpm dev
 
 - Web: `http://localhost:5173`
 - API: `http://localhost:3000`
+- OpenAPI JSON: `http://localhost:3000/openapi.json`
+- Swagger UI: `http://localhost:3000/docs`
 
 Set these environment variables before starting the API:
 

@@ -2,6 +2,13 @@ import { z } from "zod";
 import { router, publicProcedure } from "../trpc/trpc.js";
 import { toBadRequest } from "../trpc/errors.js";
 import {
+  createConfigurationOpenApiMeta,
+  deleteConfigurationOpenApiMeta,
+  listConfigurationsOpenApiMeta,
+  updateConfigurationOpenApiMeta,
+  validateConfigurationOpenApiMeta,
+} from "./configurations.openapi.js";
+import {
   createConfiguration,
   deleteConfiguration,
   listConfigurations,
@@ -21,9 +28,12 @@ export function createConfigurationsRouter(options: {
 }) {
   return router({
     list: publicProcedure
+      .meta(listConfigurationsOpenApiMeta)
+      .input(z.object({}).optional())
       .output(savedConfigurationSchema.array())
       .query(async () => listConfigurations()),
     create: publicProcedure
+      .meta(createConfigurationOpenApiMeta)
       .input(createConfigurationInputSchema)
       .output(savedConfigurationSchema)
       .mutation(async ({ input }) => {
@@ -34,6 +44,7 @@ export function createConfigurationsRouter(options: {
         }
       }),
     update: publicProcedure
+      .meta(updateConfigurationOpenApiMeta)
       .input(updateConfigurationInputSchema)
       .output(savedConfigurationSchema)
       .mutation(async ({ input }) => {
@@ -44,6 +55,7 @@ export function createConfigurationsRouter(options: {
         }
       }),
     validate: publicProcedure
+      .meta(validateConfigurationOpenApiMeta)
       .input(validateConfigurationInputSchema)
       .output(savedConfigurationSchema)
       .mutation(async ({ input }) => {
@@ -54,6 +66,7 @@ export function createConfigurationsRouter(options: {
         }
       }),
     delete: publicProcedure
+      .meta(deleteConfigurationOpenApiMeta)
       .input(deleteConfigurationInputSchema)
       .output(z.object({ deleted: z.boolean(), configurationId: z.string().min(1) }))
       .mutation(async ({ input }) => {

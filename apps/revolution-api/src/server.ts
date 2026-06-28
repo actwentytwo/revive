@@ -7,6 +7,12 @@ import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { connectToMongo } from "./db/mongo.js";
 import { closeMongoConnection } from "./db/mongo.js";
 import { appRouter } from "./router.js";
+import {
+  createOpenApiDocumentForBaseUrl,
+  createOpenApiMiddleware,
+  getRequestBaseUrl,
+  registerSwaggerUi,
+} from "./openapi/openapi.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,6 +26,7 @@ dotenv.config({
 });
 
 const app = express();
+app.set("trust proxy", true);
 
 app.use(
   cors({
@@ -31,12 +38,30 @@ app.get("/health", (_req, res) => {
   res.json({ ok: true });
 });
 
+app.get("/", (_req, res) => {
+  res.json({
+    service: "@revolution/api",
+    trpc: "/trpc",
+    openapi: "/openapi.json",
+    docs: "/docs",
+  });
+});
+
+app.get("/openapi.json", (req, res) => {
+  const baseUrl = getRequestBaseUrl(req) ?? `http://localhost:${port}`;
+  res.json(createOpenApiDocumentForBaseUrl(baseUrl));
+});
+
+registerSwaggerUi(app);
+
 app.use(
   "/trpc",
   createExpressMiddleware({
     router: appRouter,
   }),
 );
+
+app.use("/", createOpenApiMiddleware());
 
 const port = Number(process.env.PORT ?? 3000);
 
