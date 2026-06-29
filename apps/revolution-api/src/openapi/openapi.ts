@@ -2,6 +2,7 @@ import type { Express, Request, RequestHandler } from "express";
 import swaggerUi from "swagger-ui-express";
 import { createOpenApiExpressMiddleware, generateOpenApiDocument } from "trpc-to-openapi";
 import { appRouter } from "../router.js";
+import { createContext, createHeaderRequestFromExpressRequest } from "../trpc/trpc.context.js";
 
 const openApiTags = ["meta", "configurations", "projects", "videos"] as const;
 
@@ -19,6 +20,11 @@ export const createOpenApiDocumentForBaseUrl = (baseUrl: string) =>
 export const createOpenApiMiddleware = (): RequestHandler =>
   createOpenApiExpressMiddleware({
     router: appRouter,
+    createContext: ({ req }) =>
+      createContext({
+        req: createHeaderRequestFromExpressRequest(req),
+        requestId: req.header("x-request-id") ?? "openapi-request",
+      }),
   }) as RequestHandler;
 
 export const registerSwaggerUi = (app: Express): void => {

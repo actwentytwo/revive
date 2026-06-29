@@ -1,8 +1,9 @@
 import { createConfigurationsRouter } from "./configurations/configurations.router.js";
 import { metaHealthOpenApiMeta } from "./meta/meta.openapi.js";
-import { router, publicProcedure } from "./trpc/trpc.js";
+import { metaRouter } from "./meta/meta.router.js";
 import { projectsRouter } from "./projects/projects.router.js";
 import { isConfigurationInUse } from "./projects/projects.service.js";
+import { publicProcedure, router } from "./trpc/trpc.procedures.js";
 import { videosRouter } from "./videos/videos.router.js";
 import { z } from "zod";
 
@@ -23,6 +24,7 @@ export const appRouter = router({
   configurations: createConfigurationsRouter({
     isConfigurationInUse,
   }),
+  meta: metaRouter,
   projects: projectsRouter,
   videos: videosRouter,
 });

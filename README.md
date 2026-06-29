@@ -39,6 +39,28 @@ Set these environment variables before starting the API:
 
 The API reads them from `apps/revolution-api/.env`.
 
+## Authentication and RBAC
+
+The API now uses the Raven/TAP-style context model:
+
+- Identity is extracted from forwarded client certificate headers:
+  - `x-forwarded-tls-client-cert-subject` (or `ssl-client-subject-dn`)
+  - `x-forwarded-tls-client-cert-issuer` (or `ssl-client-issuer-dn`)
+  - optional SID metadata from `x-forwarded-tls-client-cert-info`
+- Functional groups are read from `x-functional-groups` (comma-separated).
+- Permissions are derived from groups and enforced on protected tRPC/OpenAPI routes.
+
+Built-in groups:
+
+- `REVOLUTION_PLATFORM_ADMINS` -> all permissions
+- `REVOLUTION_OPERATORS` -> read/write project and configuration workflow permissions
+- `REVOLUTION_VIEWERS` -> read-only workflow permissions
+
+Useful auth/session endpoints:
+
+- `GET /api/v1/meta/whoami`
+- `GET /api/v1/meta/session`
+
 The UI reads optional Vite settings from `apps/revolution-ui/.env`.
 
 - `VITE_VBRICK_VERSIONS`

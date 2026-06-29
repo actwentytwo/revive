@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { router, publicProcedure } from "../trpc/trpc.js";
+import { byPermissionedProc, router } from "../trpc/trpc.procedures.js";
 import { toBadRequest } from "../trpc/errors.js";
 import {
   createConfigurationOpenApiMeta,
@@ -27,12 +27,12 @@ export function createConfigurationsRouter(options: {
   isConfigurationInUse: (configurationId: string) => Promise<boolean>;
 }) {
   return router({
-    list: publicProcedure
+    list: byPermissionedProc("configurations.read")
       .meta(listConfigurationsOpenApiMeta)
       .input(z.object({}).optional())
       .output(savedConfigurationSchema.array())
       .query(async () => listConfigurations()),
-    create: publicProcedure
+    create: byPermissionedProc("configurations.write")
       .meta(createConfigurationOpenApiMeta)
       .input(createConfigurationInputSchema)
       .output(savedConfigurationSchema)
@@ -43,7 +43,7 @@ export function createConfigurationsRouter(options: {
           throw toBadRequest(error, "Failed to create configuration");
         }
       }),
-    update: publicProcedure
+    update: byPermissionedProc("configurations.write")
       .meta(updateConfigurationOpenApiMeta)
       .input(updateConfigurationInputSchema)
       .output(savedConfigurationSchema)
@@ -54,7 +54,7 @@ export function createConfigurationsRouter(options: {
           throw toBadRequest(error, "Failed to update configuration");
         }
       }),
-    validate: publicProcedure
+    validate: byPermissionedProc("configurations.validate")
       .meta(validateConfigurationOpenApiMeta)
       .input(validateConfigurationInputSchema)
       .output(savedConfigurationSchema)
@@ -65,7 +65,7 @@ export function createConfigurationsRouter(options: {
           throw toBadRequest(error, "Failed to validate configuration");
         }
       }),
-    delete: publicProcedure
+    delete: byPermissionedProc("configurations.delete")
       .meta(deleteConfigurationOpenApiMeta)
       .input(deleteConfigurationInputSchema)
       .output(z.object({ deleted: z.boolean(), configurationId: z.string().min(1) }))

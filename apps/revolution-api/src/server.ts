@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import cors from "cors";
 import express from "express";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
+import crypto from "node:crypto";
 import { connectToMongo } from "./db/mongo.js";
 import { closeMongoConnection } from "./db/mongo.js";
 import { appRouter } from "./router.js";
@@ -13,6 +14,7 @@ import {
   getRequestBaseUrl,
   registerSwaggerUi,
 } from "./openapi/openapi.js";
+import { createContext, createHeaderRequestFromExpressRequest } from "./trpc/trpc.context.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -58,6 +60,11 @@ app.use(
   "/trpc",
   createExpressMiddleware({
     router: appRouter,
+    createContext: ({ req }) =>
+      createContext({
+        req: createHeaderRequestFromExpressRequest(req),
+        requestId: req.header("x-request-id") ?? crypto.randomUUID(),
+      }),
   }),
 );
 

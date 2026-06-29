@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { router, publicProcedure } from "../trpc/trpc.js";
+import { byPermissionedProc, router } from "../trpc/trpc.procedures.js";
 import { toBadRequest } from "../trpc/errors.js";
 import {
   assignProjectConfigurationsOpenApiMeta,
@@ -24,12 +24,12 @@ import {
 } from "./projects.schemas.js";
 
 export const projectsRouter = router({
-  list: publicProcedure
+  list: byPermissionedProc("projects.read")
     .meta(listProjectsOpenApiMeta)
     .input(z.object({}).optional())
     .output(migrationProjectSchema.array())
     .query(async () => listProjects()),
-  create: publicProcedure
+  create: byPermissionedProc("projects.write")
     .meta(createProjectOpenApiMeta)
     .input(createProjectInputSchema)
     .output(migrationProjectSchema)
@@ -40,7 +40,7 @@ export const projectsRouter = router({
         throw toBadRequest(error, "Failed to create project");
       }
     }),
-  update: publicProcedure
+  update: byPermissionedProc("projects.write")
     .meta(updateProjectOpenApiMeta)
     .input(updateProjectInputSchema)
     .output(migrationProjectSchema)
@@ -51,7 +51,7 @@ export const projectsRouter = router({
         throw toBadRequest(error, "Failed to update project");
       }
     }),
-  delete: publicProcedure
+  delete: byPermissionedProc("projects.delete")
     .meta(deleteProjectOpenApiMeta)
     .input(deleteProjectInputSchema)
     .output(z.object({ deleted: z.boolean(), projectId: z.string().min(1) }))
@@ -62,7 +62,7 @@ export const projectsRouter = router({
         throw toBadRequest(error, "Failed to delete project");
       }
     }),
-  assignConfigurations: publicProcedure
+  assignConfigurations: byPermissionedProc("projects.assign")
     .meta(assignProjectConfigurationsOpenApiMeta)
     .input(assignProjectConfigurationsInputSchema)
     .output(migrationProjectSchema)
