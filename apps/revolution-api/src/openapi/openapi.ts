@@ -10,7 +10,7 @@ export const createOpenApiDocumentForBaseUrl = (baseUrl: string) =>
   ({
     ...generateOpenApiDocument(appRouter, {
       title: "Revolution API",
-      description: "Revolution migration API.",
+      description: "Custom Rev Solutions API.",
       version: process.env.npm_package_version ?? "0.2.0",
       baseUrl,
     }),
