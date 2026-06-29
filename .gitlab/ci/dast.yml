@@ -1,0 +1,9 @@
+dast:
+  rules:
+    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $DAST_TARGET_URL"
+    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+      when: never
+    - when: never
+  variables:
+    DAST_FULL_SCAN: "false"
+    DAST_BROWSER_SCAN: "true"

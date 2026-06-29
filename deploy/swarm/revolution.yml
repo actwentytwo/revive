@@ -1,0 +1,9 @@
+services:
+  revolution-api:
+    image: ${REVOLUTION_API_IMAGE_REPO:-registry.example.invalid/revolution-api}:0.0.0
+    deploy:
+      replicas: 1
+  revolution-ui:
+    image: ${REVOLUTION_UI_IMAGE_REPO:-registry.example.invalid/revolution-ui}:0.0.0
+    deploy:
+      replicas: 1

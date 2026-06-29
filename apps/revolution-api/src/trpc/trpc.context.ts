@@ -1,6 +1,6 @@
 import type { Request } from "express";
-import type { RevolutionPermission } from "../access/catalog.js";
-import { resolveGrants } from "../access/catalog.js";
+import type { Permission as RevolutionPermission } from "../access/permissions.schemas.js";
+import { resolveGrantsFromCatalog } from "../access/catalog.repository.js";
 import type { RevolutionIdentity } from "../auth/identity.js";
 import { resolveFunctionalGroups } from "../auth/groupResolver.js";
 import { extractIdentityFromRequest, type HeaderRequest } from "../auth/pkiAuth.js";
@@ -25,7 +25,7 @@ export async function createContext({
   const identity = extractIdentityFromRequest(req);
   const actorType = resolveActorType(identity);
   const functionalGroups = resolveFunctionalGroups(req);
-  const grants = resolveGrants(functionalGroups, identity?.subject);
+  const grants = await resolveGrantsFromCatalog(functionalGroups, identity?.subject);
 
   return {
     requestId,
@@ -39,6 +39,7 @@ export async function createContext({
 
 export function createHeaderRequestFromExpressRequest(req: Request): HeaderRequest {
   return {
+    hostname: req.hostname,
     header: (name) => req.header(name) ?? undefined,
   };
 }

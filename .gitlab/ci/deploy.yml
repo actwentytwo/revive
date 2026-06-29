@@ -1,0 +1,89 @@
+publish_deploy_branches:
+  stage: deploy
+  image: alpine:3.20
+  needs:
+    - job: build_api_image
+    - job: build_ui_image
+    - job: format_check
+    - job: lint
+    - job: check
+    - job: test
+  rules:
+    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+      exists:
+        - deploy/swarm/revolution.yml
+  before_script:
+    - apk add --no-cache git
+  script:
+    - |
+      git config user.name "${GITLAB_USER_NAME:-Revolution CI}"
+      git config user.email "${GITLAB_USER_EMAIL:-revolution-ci@example.invalid}"
+      APP_VERSION="$(grep -m1 '"version"' package.json | sed -E 's/.*"version": "([^"]+)".*/\1/')"
+      test -n "${APP_VERSION}"
+      STAGING_DEPLOY_BRANCH="${REVOLUTION_STAGING_DEPLOY_BRANCH:-deploy/revolution-staging}"
+      PRODUCTION_DEPLOY_BRANCH="${REVOLUTION_PRODUCTION_DEPLOY_BRANCH:-deploy/revolution-production}"
+
+      if [ -n "${REVOLUTION_CI_PUSH_USER:-}" ] && [ -n "${REVOLUTION_CI_PUSH_TOKEN:-}" ]; then
+        PUSH_USER="${REVOLUTION_CI_PUSH_USER}"
+        PUSH_TOKEN="${REVOLUTION_CI_PUSH_TOKEN}"
+      else
+        PUSH_USER="gitlab-ci-token"
+        PUSH_TOKEN="${CI_JOB_TOKEN:-}"
+      fi
+
+      if [ -z "${PUSH_TOKEN}" ]; then
+        echo "No GitLab push credential is available for deploy/swarm/revolution.yml write-back."
+        echo "Set protected CI/CD variables REVOLUTION_CI_PUSH_USER and REVOLUTION_CI_PUSH_TOKEN, or enable CI job-token pushes for this project."
+        exit 1
+      fi
+
+      update_deploy_branch() {
+        DEPLOY_BRANCH="$1"
+        DEPLOY_ENVIRONMENT="$2"
+        DEPLOY_WEBHOOK_URL="${3:-}"
+        DEPLOY_BRANCH_EXISTS="0"
+
+        if git ls-remote --exit-code --heads origin "${DEPLOY_BRANCH}" >/dev/null 2>&1; then
+          DEPLOY_BRANCH_EXISTS="1"
+          git fetch origin "${DEPLOY_BRANCH}"
+          git checkout -B "${DEPLOY_BRANCH}" FETCH_HEAD
+          git checkout "${CI_COMMIT_SHA}" -- deploy/swarm/revolution.yml
+        else
+          echo "Deploy branch ${DEPLOY_BRANCH} does not exist yet; it will be created from ${CI_COMMIT_SHA}."
+          git checkout -B "${DEPLOY_BRANCH}" "${CI_COMMIT_SHA}"
+        fi
+
+        sed -i "s|^\([[:space:]]*image:[[:space:]]*\\${REVOLUTION_API_IMAGE_REPO[^}]*}:\).*|\1${APP_VERSION}|" deploy/swarm/revolution.yml
+        sed -i "s|^\([[:space:]]*image:[[:space:]]*\\${REVOLUTION_UI_IMAGE_REPO[^}]*}:\).*|\1${APP_VERSION}|" deploy/swarm/revolution.yml
+        git add deploy/swarm/revolution.yml
+
+        if git diff --cached --quiet; then
+          echo "deploy/swarm/revolution.yml on ${DEPLOY_BRANCH} already points at ${APP_VERSION}; nothing to commit."
+          if [ "${DEPLOY_BRANCH_EXISTS}" = "1" ]; then
+            return 0
+          fi
+          echo "Creating missing deploy branch ${DEPLOY_BRANCH} without an image-ref commit."
+        else
+          git commit -m "deploy(${DEPLOY_ENVIRONMENT}): update image refs to ${APP_VERSION}"
+        fi
+
+        if ! git push -o ci.skip "https://${PUSH_USER}:${PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git" "HEAD:${DEPLOY_BRANCH}"; then
+          echo "Failed to push deploy/swarm/revolution.yml back to ${DEPLOY_BRANCH}."
+          echo "If this project does not allow CI_JOB_TOKEN writes, set protected CI/CD variables REVOLUTION_CI_PUSH_USER and REVOLUTION_CI_PUSH_TOKEN for a repo write credential."
+          echo "GitLab alternative: enable job-token Git pushes for this project."
+          exit 1
+        fi
+
+        if [ -n "${DEPLOY_WEBHOOK_URL}" ]; then
+          echo "Triggering ${DEPLOY_ENVIRONMENT} Portainer stack webhook."
+          wget -qO- --post-data='' "${DEPLOY_WEBHOOK_URL}" >/dev/null || {
+            echo "Failed to trigger ${DEPLOY_ENVIRONMENT} Portainer stack webhook."
+            exit 1
+          }
+        else
+          echo "No ${DEPLOY_ENVIRONMENT} Portainer webhook configured; branch updated only."
+        fi
+      }
+
+      update_deploy_branch "${STAGING_DEPLOY_BRANCH}" "staging" "${REVOLUTION_STAGING_STACK_WEBHOOK_URL:-}"
+      update_deploy_branch "${PRODUCTION_DEPLOY_BRANCH}" "production" ""

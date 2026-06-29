@@ -21,8 +21,8 @@ Source environment details are now stored per project in MongoDB. The backend st
 
 ```bash
 pnpm install
-cp apps/revolution-api/.env.example apps/revolution-api/.env
-cp apps/revolution-ui/.env.example apps/revolution-ui/.env
+# configure apps/revolution-api/.env (and optional apps/revolution-api/.env.local)
+# configure apps/revolution-ui/.env (or apps/revolution-ui/.env.local) as needed
 pnpm dev:mongo:check:full
 pnpm dev
 ```
@@ -36,6 +36,8 @@ Set these environment variables before starting the API:
 
 - `MONGODB_URI`
 - `MONGODB_DB_NAME`
+- `DEV_LOCALHOST_BYPASS_SUBJECT` (optional, localhost-only auth bypass for development)
+- `DEV_LOCALHOST_BYPASS_FUNCTIONAL_GROUPS` (optional, comma-separated localhost dev groups)
 
 The API reads them from `apps/revolution-api/.env`.
 
@@ -49,12 +51,22 @@ The API now uses the Raven/TAP-style context model:
   - optional SID metadata from `x-forwarded-tls-client-cert-info`
 - Functional groups are read from `x-functional-groups` (comma-separated).
 - Permissions are derived from groups and enforced on protected tRPC/OpenAPI routes.
+- When `DEV_LOCALHOST_BYPASS_SUBJECT` is set, localhost requests can authenticate without
+  forwarded certificate headers (Raven/TAP dev parity behavior).
+- When `DEV_LOCALHOST_BYPASS_FUNCTIONAL_GROUPS` is set, localhost requests can resolve
+  functional groups without `x-functional-groups` headers.
 
 Built-in groups:
 
 - `REVOLUTION_PLATFORM_ADMINS` -> all permissions
 - `REVOLUTION_OPERATORS` -> read/write project and configuration workflow permissions
 - `REVOLUTION_VIEWERS` -> read-only workflow permissions
+
+RBAC catalogs are persisted in Mongo for Raven/TAP parity:
+
+- `role-catalog`
+- `permission-catalog`
+- `role-permission-catalog`
 
 Useful auth/session endpoints:
 

@@ -18,6 +18,15 @@
   box-sizing: border-box;
 }
 
+html {
+  scrollbar-gutter: stable;
+}
+
+html.uc-dialog-scroll-lock,
+html.uc-dialog-scroll-lock body {
+  overflow: hidden;
+}
+
 html,
 body,
 #root {

@@ -38,4 +38,21 @@ describe("meta router auth", () => {
     expect(result.identity?.subject).toContain("CN=Operator One");
     expect(result.grants).toContain("projects.read");
   });
+
+  it("refreshes session attributes for authenticated caller", async () => {
+    const caller = appRouter.createCaller(authenticatedContext);
+    const result = await caller.meta.refreshSessionAttributes();
+
+    expect(result.functionalGroups).toEqual(["REVOLUTION_OPERATORS"]);
+    expect(result.operatorEmail).toBeNull();
+  });
+
+  it("returns authorisation model for authenticated caller", async () => {
+    const caller = appRouter.createCaller(authenticatedContext);
+    const result = await caller.meta.authorisationModel();
+
+    expect(result.roles.length).toBeGreaterThan(0);
+    expect(result.permissions.length).toBeGreaterThan(0);
+    expect(result.roles.some((role) => role.key === "REVOLUTION_PLATFORM_ADMINS")).toBe(true);
+  });
 });

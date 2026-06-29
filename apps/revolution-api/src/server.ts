@@ -5,6 +5,7 @@ import cors from "cors";
 import express from "express";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import crypto from "node:crypto";
+import { initializeAccessCatalogs } from "./access/catalog.repository.js";
 import { connectToMongo } from "./db/mongo.js";
 import { closeMongoConnection } from "./db/mongo.js";
 import { appRouter } from "./router.js";
@@ -74,6 +75,7 @@ const port = Number(process.env.PORT ?? 3000);
 
 async function start() {
   await connectToMongo();
+  await initializeAccessCatalogs();
 
   app.listen(port, () => {
     console.log(`REVIVE API listening on http://localhost:${port}`);

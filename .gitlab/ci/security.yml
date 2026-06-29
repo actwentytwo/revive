@@ -1,0 +1,15 @@
+secret_detection:
+  stage: secret-detection
+
+container_scanning:
+  needs:
+    - job: build_api_image
+  variables:
+    CS_IMAGE: "${CI_REGISTRY_IMAGE}/revolution-api:${CI_COMMIT_SHA}"
+
+container_scanning_ui:
+  extends: container_scanning
+  needs:
+    - job: build_ui_image
+  variables:
+    CS_IMAGE: "${CI_REGISTRY_IMAGE}/revolution-ui:${CI_COMMIT_SHA}"

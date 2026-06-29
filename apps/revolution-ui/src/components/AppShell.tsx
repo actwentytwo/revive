@@ -44,6 +44,8 @@ import { ProjectConfigurationPage } from "../pages/ProjectConfigurationPage";
 import { ProjectsPage } from "../pages/ProjectsPage";
 import { ConfigurationWorkspacePage } from "../pages/ConfigurationWorkspacePage";
 import { VideosPage } from "../pages/VideosPage";
+import { MyProfilePage } from "../pages/MyProfilePage";
+import { RolePermissionsEditorPage } from "../pages/RolePermissionsEditorPage";
 import { changelog, type ChangeLogEntry } from "../changelog";
 import { trpc } from "../main";
 import "../App.css";
@@ -826,6 +828,14 @@ export function VideosPageRoute() {
 export function ChangeLogPageRoute() {
   const { orderedChangelog } = useRevolutionAppContext();
   return <ChangeLogPage entries={orderedChangelog} />;
+}
+
+export function MyProfilePageRoute() {
+  return <MyProfilePage />;
+}
+
+export function RolePermissionsEditorRoute() {
+  return <RolePermissionsEditorPage />;
 }
 
 export function ProjectWorkspaceRoute() {

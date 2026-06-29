@@ -30,3 +30,23 @@ export const metaSessionOpenApiMeta: OpenApiMeta = {
     summary: "Return current session context",
   },
 };
+
+export const metaRefreshSessionAttributesOpenApiMeta: OpenApiMeta = {
+  openapi: {
+    enabled: true,
+    method: "POST",
+    path: "/api/v1/meta/session/attributes/refresh",
+    tags: ["meta"],
+    summary: "Refresh current session attributes",
+  },
+};
+
+export const metaAuthorisationModelOpenApiMeta: OpenApiMeta = {
+  openapi: {
+    enabled: true,
+    method: "GET",
+    path: "/api/v1/meta/authorisation-model",
+    tags: ["meta"],
+    summary: "Return authorisation model",
+  },
+};

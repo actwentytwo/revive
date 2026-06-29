@@ -2,6 +2,7 @@ import type { RevolutionIdentity } from "./identity.js";
 
 export interface HeaderRequest {
   header: (name: string) => string | undefined;
+  hostname?: string;
 }
 
 function parseSid(value: string | undefined) {
@@ -27,20 +28,37 @@ export function extractIdentityFromRequest(req: HeaderRequest): RevolutionIdenti
   const subject =
     req.header("x-forwarded-tls-client-cert-subject") ?? req.header("ssl-client-subject-dn");
 
-  if (!subject) {
+  if (subject) {
+    const issuer =
+      req.header("x-forwarded-tls-client-cert-issuer") ?? req.header("ssl-client-issuer-dn");
+    const info =
+      req.header("x-forwarded-tls-client-cert-info") ?? req.header("x-forwarded-tls-client-cert");
+
+    return {
+      subject,
+      ...(issuer ? { issuer } : {}),
+      ...(parseSid(info) ? { sid: parseSid(info) } : {}),
+      ...(parseCn(subject) ? { cn: parseCn(subject) } : {}),
+      ...(parseEmail(subject) ? { emailAddress: parseEmail(subject) } : {}),
+    };
+  }
+
+  const bypassSubject = (process.env.DEV_LOCALHOST_BYPASS_SUBJECT ?? "").trim();
+  const hostname = req.hostname?.toLowerCase();
+  const isLocalhost =
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname === "::1" ||
+    hostname?.endsWith(".localhost") === true;
+
+  if (!bypassSubject || !isLocalhost) {
     return null;
   }
 
-  const issuer =
-    req.header("x-forwarded-tls-client-cert-issuer") ?? req.header("ssl-client-issuer-dn");
-  const info =
-    req.header("x-forwarded-tls-client-cert-info") ?? req.header("x-forwarded-tls-client-cert");
-
   return {
-    subject,
-    ...(issuer ? { issuer } : {}),
-    ...(parseSid(info) ? { sid: parseSid(info) } : {}),
-    ...(parseCn(subject) ? { cn: parseCn(subject) } : {}),
-    ...(parseEmail(subject) ? { emailAddress: parseEmail(subject) } : {}),
+    subject: bypassSubject,
+    issuer: "development-localhost-bypass",
+    ...(parseCn(bypassSubject) ? { cn: parseCn(bypassSubject) } : {}),
+    ...(parseEmail(bypassSubject) ? { emailAddress: parseEmail(bypassSubject) } : {}),
   };
 }

@@ -15,6 +15,8 @@ import {
   Paper,
   Snackbar,
   Stack,
+  Tab,
+  Tabs,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -34,6 +36,11 @@ import {
   normalizeVbrickVersion,
   type ConfigurationFormState,
 } from "../components/shared/pageChrome.helpers";
+import { AuthorisationModelPage } from "./AuthorisationModelPage";
+
+const platformTabs = ["rev-instances", "authorisation"] as const;
+
+type PlatformTabValue = (typeof platformTabs)[number];
 
 type ConfigurationWorkspacePageProps = {
   activeConfiguration: SavedConfiguration | undefined;
@@ -64,6 +71,7 @@ export function ConfigurationWorkspacePage({
   saveConfigurationError,
   validateConfigurationError,
 }: ConfigurationWorkspacePageProps) {
+  const [activePlatformTab, setActivePlatformTab] = useState<PlatformTabValue>("rev-instances");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [formState, setFormState] = useState<ConfigurationFormState>(() =>
     formStateFromConfiguration(activeConfiguration),
@@ -120,54 +128,89 @@ export function ConfigurationWorkspacePage({
         subtitle="Configure platform level settings"
       />
 
-      <section className="content-grid configurations-grid">
-        <Paper className="panel">
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="flex-start"
-            spacing={2}
-            mb={2.5}
-          >
-            <PanelTitle
-              icon={<StorageRounded />}
-              title="Rev API Instances"
-              subtitle="Named Rev API instances."
-            />
-            <Tooltip title="Add instance">
-              <IconButton
-                color="inherit"
-                onClick={() => setIsCreateDialogOpen(true)}
-                aria-label="Add instance"
-                disabled={isBusy}
-                sx={{ mt: 0.25 }}
-              >
-                <AddRounded />
-              </IconButton>
-            </Tooltip>
-          </Stack>
-          <Stack spacing={2}>
-            {configurations.length === 0 ? (
-              <Alert severity="info">No instances have been saved yet.</Alert>
-            ) : (
-              configurations.map((configuration) => {
-                const isSelected = configuration.id === activeConfiguration?.id;
+      <Paper className="panel panel-full">
+        <Tabs
+          value={activePlatformTab}
+          onChange={(_event, value: PlatformTabValue) => setActivePlatformTab(value)}
+          variant="scrollable"
+          scrollButtons="auto"
+        >
+          <Tab value="rev-instances" label="Rev Instances" />
+          <Tab value="authorisation" label="Authorisation" />
+        </Tabs>
+      </Paper>
 
-                return (
-                  <Paper
-                    key={configuration.id}
-                    component="button"
-                    type="button"
-                    variant="outlined"
-                    className={`project-card configuration-card ${isSelected ? "project-card-active project-card-selected" : ""}`}
-                    onClick={() => onSelectConfiguration(configuration.id)}
-                  >
-                    <Stack
-                      direction={{ xs: "column", sm: "row" }}
-                      justifyContent="space-between"
-                      spacing={1.5}
+      {activePlatformTab === "rev-instances" ? (
+        <section className="content-grid configurations-grid">
+          <Paper className="panel">
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="flex-start"
+              spacing={2}
+              mb={2.5}
+            >
+              <PanelTitle
+                icon={<StorageRounded />}
+                title="Rev API Instances"
+                subtitle="Named Rev API instances."
+              />
+              <Tooltip title="Add instance">
+                <IconButton
+                  color="inherit"
+                  onClick={() => setIsCreateDialogOpen(true)}
+                  aria-label="Add instance"
+                  disabled={isBusy}
+                  sx={{ mt: 0.25 }}
+                >
+                  <AddRounded />
+                </IconButton>
+              </Tooltip>
+            </Stack>
+            <Stack spacing={2}>
+              {configurations.length === 0 ? (
+                <Alert severity="info">No instances have been saved yet.</Alert>
+              ) : (
+                configurations.map((configuration) => {
+                  const isSelected = configuration.id === activeConfiguration?.id;
+
+                  return (
+                    <Paper
+                      key={configuration.id}
+                      component="button"
+                      type="button"
+                      variant="outlined"
+                      className={`project-card configuration-card ${isSelected ? "project-card-active project-card-selected" : ""}`}
+                      onClick={() => onSelectConfiguration(configuration.id)}
                     >
-                      <Box>
+                      <Stack
+                        direction={{ xs: "column", sm: "row" }}
+                        justifyContent="space-between"
+                        spacing={1.5}
+                      >
+                        <Box>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                            useFlexGap
+                            flexWrap="wrap"
+                          >
+                            <Typography variant="h6">{configuration.name}</Typography>
+                            <Chip
+                              size="small"
+                              variant="outlined"
+                              label={
+                                configuration.productVersion
+                                  ? normalizeVbrickVersion(configuration.productVersion)
+                                  : "No version"
+                              }
+                            />
+                          </Stack>
+                          <Typography color="text.secondary">
+                            {configuration.environment.url}
+                          </Typography>
+                        </Box>
                         <Stack
                           direction="row"
                           spacing={1}
@@ -175,120 +218,107 @@ export function ConfigurationWorkspacePage({
                           useFlexGap
                           flexWrap="wrap"
                         >
-                          <Typography variant="h6">{configuration.name}</Typography>
                           <Chip
                             size="small"
-                            variant="outlined"
+                            color={configuration.validatedEnvironment ? "success" : "warning"}
                             label={
-                              configuration.productVersion
-                                ? normalizeVbrickVersion(configuration.productVersion)
-                                : "No version"
+                              configuration.validatedEnvironment ? "Validated" : "Needs validation"
                             }
                           />
                         </Stack>
-                        <Typography color="text.secondary">
-                          {configuration.environment.url}
-                        </Typography>
-                      </Box>
-                      <Stack
-                        direction="row"
-                        spacing={1}
-                        alignItems="center"
-                        useFlexGap
-                        flexWrap="wrap"
-                      >
-                        <Chip
-                          size="small"
-                          color={configuration.validatedEnvironment ? "success" : "warning"}
-                          label={
-                            configuration.validatedEnvironment ? "Validated" : "Needs validation"
-                          }
-                        />
                       </Stack>
-                    </Stack>
-                  </Paper>
-                );
-              })
-            )}
-          </Stack>
-        </Paper>
-
-        <Paper className="panel">
-          <PanelTitle
-            icon={<SettingsEthernetRounded />}
-            title="Instance Details"
-            subtitle="Edit the selected instance and validate its connection."
-          />
-          {activeConfiguration ? (
-            <Stack spacing={2}>
-              <ConfigurationEditorFields
-                idPrefix="edit"
-                formState={formState}
-                setField={updateFormState}
-              />
-              <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
-                <Button
-                  variant="contained"
-                  size="large"
-                  onClick={async () => {
-                    try {
-                      setPageError(null);
-                      await onSaveConfiguration(formState);
-                    } catch (error) {
-                      setPageError(getErrorMessage(error));
-                    }
-                  }}
-                  disabled={isBusy || !isConfigurationFormReady(formState)}
-                >
-                  Save changes
-                </Button>
-                <Button
-                  variant="outlined"
-                  size="large"
-                  onClick={async () => {
-                    try {
-                      setPageError(null);
-                      await onValidateConfiguration();
-                    } catch (error) {
-                      setPageError(getErrorMessage(error));
-                    }
-                  }}
-                  disabled={isBusy}
-                >
-                  Validate connection
-                </Button>
-                <Button
-                  variant="text"
-                  color="error"
-                  size="large"
-                  onClick={async () => {
-                    try {
-                      setPageError(null);
-                      await onDeleteConfiguration(activeConfiguration.id);
-                    } catch (error) {
-                      setPageError(getErrorMessage(error));
-                    }
-                  }}
-                  disabled={isBusy}
-                >
-                  Delete
-                </Button>
-              </Stack>
+                    </Paper>
+                  );
+                })
+              )}
             </Stack>
-          ) : (
-            <Alert severity="info">Select a configuration to view or edit it.</Alert>
-          )}
-        </Paper>
+          </Paper>
 
-        <ConfigurationSummaryPanel
-          title="Validation Summary"
-          subtitle="Connection details confirmed by the API."
-          configuration={activeConfiguration}
-          emptyMessage="Validate a configuration to view its connection details here."
-          className="panel-full"
-          dense
-        />
-      </section>
+          <Paper className="panel">
+            <PanelTitle
+              icon={<SettingsEthernetRounded />}
+              title="Instance Details"
+              subtitle="Edit the selected instance and validate its connection."
+            />
+            {activeConfiguration ? (
+              <Stack spacing={2}>
+                <ConfigurationEditorFields
+                  idPrefix="edit"
+                  formState={formState}
+                  setField={updateFormState}
+                />
+                <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
+                  <Button
+                    variant="contained"
+                    size="large"
+                    onClick={async () => {
+                      try {
+                        setPageError(null);
+                        await onSaveConfiguration(formState);
+                      } catch (error) {
+                        setPageError(getErrorMessage(error));
+                      }
+                    }}
+                    disabled={isBusy || !isConfigurationFormReady(formState)}
+                  >
+                    Save changes
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    size="large"
+                    onClick={async () => {
+                      try {
+                        setPageError(null);
+                        await onValidateConfiguration();
+                      } catch (error) {
+                        setPageError(getErrorMessage(error));
+                      }
+                    }}
+                    disabled={isBusy}
+                  >
+                    Validate connection
+                  </Button>
+                  <Button
+                    variant="text"
+                    color="error"
+                    size="large"
+                    onClick={async () => {
+                      try {
+                        setPageError(null);
+                        await onDeleteConfiguration(activeConfiguration.id);
+                      } catch (error) {
+                        setPageError(getErrorMessage(error));
+                      }
+                    }}
+                    disabled={isBusy}
+                  >
+                    Delete
+                  </Button>
+                </Stack>
+              </Stack>
+            ) : (
+              <Alert severity="info">Select a configuration to view or edit it.</Alert>
+            )}
+          </Paper>
+
+          <ConfigurationSummaryPanel
+            title="Validation Summary"
+            subtitle="Connection details confirmed by the API."
+            configuration={activeConfiguration}
+            emptyMessage="Validate a configuration to view its connection details here."
+            className="panel-full"
+            dense
+          />
+        </section>
+      ) : null}
+
+      {activePlatformTab === "authorisation" ? (
+        <section className="content-grid configurations-grid">
+          <div className="panel panel-full">
+            <AuthorisationModelPage />
+          </div>
+        </section>
+      ) : null}
 
       <Dialog
         open={isCreateDialogOpen}

@@ -1,0 +1,14 @@
+node_modules
+apps/*/node_modules
+apps/*/dist
+dist
+.git
+.gitignore
+.DS_Store
+*.log
+pnpm-debug.log*
+.env.local
+apps/*/.env.local
+dev/pki/generated
+dev/traefik/generated
+coverage

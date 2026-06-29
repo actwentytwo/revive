@@ -1,0 +1,34 @@
+stages:
+  - build
+  - test
+  - deploy
+  - khazad
+  # - review
+  - dast
+  # - staging
+  # - canary
+  # - production
+  # - incremental rollout 10%
+  # - incremental rollout 25%
+  # - incremental rollout 50%
+  # - incremental rollout 100%
+  # - performance
+  # - cleanup
+  - secret-detection
+
+workflow:
+  rules:
+    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+      when: always
+    - when: never
+
+include:
+  - template: Jobs/Container-Scanning.gitlab-ci.yml
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+  - template: Security/DAST.gitlab-ci.yml
+  - local: .gitlab/ci/build.yml
+  - local: .gitlab/ci/deploy.yml
+  - local: .gitlab/ci/khazad.yml
+  - local: .gitlab/ci/quality.yml
+  - local: .gitlab/ci/security.yml
+  - local: .gitlab/ci/dast.yml

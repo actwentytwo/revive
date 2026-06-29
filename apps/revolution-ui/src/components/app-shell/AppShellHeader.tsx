@@ -14,6 +14,7 @@ import AddRounded from "@mui/icons-material/AddRounded";
 import DarkModeRounded from "@mui/icons-material/DarkModeRounded";
 import LightModeRounded from "@mui/icons-material/LightModeRounded";
 import TuneIcon from "@mui/icons-material/Tune";
+import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
 import { Link, NavLink } from "react-router-dom";
 import type { MigrationProject } from "@revolution/shared";
 import { RevolutionLogo } from "./RevolutionLogo";
@@ -137,6 +138,20 @@ export function AppShellHeader({
             <IconButton className="theme-toggle" onClick={onToggleMode} color="inherit">
               {mode === "light" ? <DarkModeRounded /> : <LightModeRounded />}
             </IconButton>
+          </Tooltip>
+
+          <Tooltip title="My Profile">
+            <span>
+              <IconButton
+                component={NavLink}
+                to="/profile"
+                className="nav-icon-button"
+                aria-label="My Profile"
+                color="inherit"
+              >
+                <AccountCircleOutlinedIcon />
+              </IconButton>
+            </span>
           </Tooltip>
         </Stack>
       </Stack>

@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import type { RevolutionPermission } from "../access/catalog.js";
+import type { Permission as RevolutionPermission } from "../access/permissions.schemas.js";
 import { procedure, router } from "./trpc.js";
 
 export { router };

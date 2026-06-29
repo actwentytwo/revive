@@ -1,0 +1,76 @@
+trigger_khazad_feed:
+  stage: khazad
+  image: alpine:3.20
+  needs:
+    - job: publish_deploy_branches
+  rules:
+    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+  before_script:
+    - apk add --no-cache curl openssl
+  script:
+    - |
+      if [ -z "${KD_FEED_WEBHOOK_URL:-}" ] || [ -z "${KD_FEED_WEBHOOK_SECRET:-}" ]; then
+        echo "KD feed webhook is not configured; skipping."
+        exit 0
+      fi
+
+      echo "Triggering KD feed webhook."
+
+      KD_WEBHOOK_PAYLOAD=$(cat <<JSON
+      {
+        "eventKey": "repo:refs_changed",
+        "date": "$(date -u +"%Y-%m-%dT%H:%M:%S+0000")",
+        "actor": {
+          "name": "gitlab-ci",
+          "emailAddress": "${GITLAB_USER_EMAIL:-revolution-ci@example.invalid}",
+          "id": 1,
+          "displayName": "${GITLAB_USER_NAME:-Revolution CI}",
+          "active": true,
+          "slug": "gitlab-ci",
+          "type": "NORMAL"
+        },
+        "repository": {
+          "slug": "${CI_PROJECT_NAME}",
+          "id": ${CI_PROJECT_ID},
+          "name": "${CI_PROJECT_NAME}",
+          "scmId": "git",
+          "state": "AVAILABLE",
+          "statusMessage": "Available",
+          "forkable": true,
+          "project": {
+            "key": "${CI_PROJECT_NAMESPACE}",
+            "id": ${CI_PROJECT_ID},
+            "name": "${CI_PROJECT_PATH}",
+            "public": false,
+            "type": "NORMAL"
+          },
+          "public": false
+        },
+        "changes": [
+          {
+            "ref": {
+              "id": "refs/heads/${CI_DEFAULT_BRANCH}",
+              "displayId": "${CI_DEFAULT_BRANCH}",
+              "type": "BRANCH"
+            },
+            "refId": "refs/heads/${CI_DEFAULT_BRANCH}",
+            "fromHash": "${CI_COMMIT_BEFORE_SHA:-0000000000000000000000000000000000000000}",
+            "toHash": "${CI_COMMIT_SHA}",
+            "type": "UPDATE"
+          }
+        ]
+      }
+      JSON
+      )
+
+      KD_WEBHOOK_SIGNATURE=$(printf '%s' "${KD_WEBHOOK_PAYLOAD}" | openssl dgst -sha256 -hmac "${KD_FEED_WEBHOOK_SECRET}" -hex | sed 's/^.* //')
+
+      curl -fsS \
+        -X POST "${KD_FEED_WEBHOOK_URL}" \
+        -H "Content-Type: application/json" \
+        -H "X-Hub-Signature: sha256=${KD_WEBHOOK_SIGNATURE}" \
+        -H "X-Event-Key: repo:refs_changed" \
+        --data-binary "${KD_WEBHOOK_PAYLOAD}" >/dev/null || {
+          echo "Failed to trigger KD feed webhook."
+          exit 1
+        }

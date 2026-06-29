@@ -4,7 +4,7 @@ import { createOpenApiExpressMiddleware, generateOpenApiDocument } from "trpc-to
 import { appRouter } from "../router.js";
 import { createContext, createHeaderRequestFromExpressRequest } from "../trpc/trpc.context.js";
 
-const openApiTags = ["meta", "configurations", "projects", "videos"] as const;
+const openApiTags = ["meta", "access", "configurations", "projects", "videos"] as const;
 
 export const createOpenApiDocumentForBaseUrl = (baseUrl: string) =>
   ({

@@ -1,4 +1,5 @@
 import { createConfigurationsRouter } from "./configurations/configurations.router.js";
+import { accessRouter } from "./access/access.router.js";
 import { metaHealthOpenApiMeta } from "./meta/meta.openapi.js";
 import { metaRouter } from "./meta/meta.router.js";
 import { projectsRouter } from "./projects/projects.router.js";
@@ -24,6 +25,7 @@ export const appRouter = router({
   configurations: createConfigurationsRouter({
     isConfigurationInUse,
   }),
+  access: accessRouter,
   meta: metaRouter,
   projects: projectsRouter,
   videos: videosRouter,

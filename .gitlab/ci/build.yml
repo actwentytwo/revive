@@ -1,0 +1,121 @@
+.kaniko_build_template:
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - api_failure
+      - scheduler_failure
+      - stuck_or_timeout_failure
+      - unknown_failure
+  before_script:
+    - mkdir -p /kaniko/.docker
+    - |
+      AUTH_ENTRIES=$(cat <<EOF2
+      "${CI_REGISTRY}": {
+        "username": "${CI_REGISTRY_USER}",
+        "password": "${CI_REGISTRY_PASSWORD}"
+      }
+      EOF2
+      )
+
+      if [ -n "${CI_DEPENDENCY_PROXY_SERVER:-}" ] && [ -n "${CI_DEPENDENCY_PROXY_USER:-}" ] && [ -n "${CI_DEPENDENCY_PROXY_PASSWORD:-}" ]; then
+        AUTH_ENTRIES="${AUTH_ENTRIES},
+      \"${CI_DEPENDENCY_PROXY_SERVER}\": {
+        \"username\": \"${CI_DEPENDENCY_PROXY_USER}\",
+        \"password\": \"${CI_DEPENDENCY_PROXY_PASSWORD}\"
+      }"
+      fi
+
+      if [ -n "${DOCKERHUB_USERNAME:-}" ] && [ -n "${DOCKERHUB_PASSWORD:-}" ]; then
+        AUTH_ENTRIES="${AUTH_ENTRIES},
+      \"https://index.docker.io/v1/\": {
+        \"username\": \"${DOCKERHUB_USERNAME}\",
+        \"password\": \"${DOCKERHUB_PASSWORD}\"
+      }"
+      fi
+
+      cat > /kaniko/.docker/config.json <<EOF2
+      {
+        "auths": {
+      ${AUTH_ENTRIES}
+        }
+      }
+      EOF2
+    - |
+      export APP_VERSION="$(grep -m1 '"version"' package.json | sed -E 's/.*"version": "([^"]+)".*/\1/')"
+      export NODE_BASE_IMAGE="${CI_REGISTRY_IMAGE}/node:22-alpine"
+      export NGINX_BASE_IMAGE="${CI_REGISTRY_IMAGE}/nginx:1.29-alpine"
+
+      echo "========== REVOLUTION CA DIAGNOSTIC START =========="
+      echo "REVOLUTION CA DIAGNOSTIC: checking EXTRA_CA_CERTS_PEM_B64 for Docker build trust setup."
+      if [ -z "${EXTRA_CA_CERTS_PEM_B64:-}" ]; then
+        echo "REVOLUTION CA DIAGNOSTIC: FAIL - EXTRA_CA_CERTS_PEM_B64 is not set for this pipeline."
+      elif printf '%s' "${EXTRA_CA_CERTS_PEM_B64}" | grep -q -- "-----BEGIN CERTIFICATE-----"; then
+        echo "REVOLUTION CA DIAGNOSTIC: OK - EXTRA_CA_CERTS_PEM_B64 is set and appears to contain raw PEM certificate text."
+        echo "REVOLUTION CA DIAGNOSTIC: OK - current Dockerfiles write this value directly to /etc/CertificateAuthorities.pem."
+      elif printf '%s' "${EXTRA_CA_CERTS_PEM_B64}" | base64 -d >/dev/null 2>&1; then
+        echo "REVOLUTION CA DIAGNOSTIC: FAIL - EXTRA_CA_CERTS_PEM_B64 appears to be base64 encoded."
+        echo "REVOLUTION CA DIAGNOSTIC: FAIL - current Dockerfiles expect raw PEM certificate text, not base64."
+      else
+        echo "REVOLUTION CA DIAGNOSTIC: FAIL - EXTRA_CA_CERTS_PEM_B64 is set but does not look like raw PEM certificate text."
+      fi
+      echo "========== REVOLUTION CA DIAGNOSTIC END =========="
+
+      PROJECT_JSON="$(wget -qO- --header="JOB-TOKEN: ${CI_JOB_TOKEN}" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}" || true)"
+      PROJECT_NAMESPACE_KIND="$(printf '%s' "${PROJECT_JSON}" | tr -d '\n' | sed -n 's/.*"namespace":{[^}]*"kind":"\([^"]*\)".*/\1/p')"
+      DEPENDENCY_PROXY_PREFIX="${CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX:-${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX:-}}"
+
+      if [ "${PROJECT_NAMESPACE_KIND}" = "group" ] && [ -n "${DEPENDENCY_PROXY_PREFIX}" ]; then
+        export NODE_BASE_IMAGE="${DEPENDENCY_PROXY_PREFIX}/node:22-alpine"
+        export NGINX_BASE_IMAGE="${DEPENDENCY_PROXY_PREFIX}/nginx:1.29-alpine"
+      fi
+    - test -n "${APP_VERSION}"
+
+build_api_image:
+  extends: .kaniko_build_template
+  script:
+    - |
+      DESTINATIONS="--destination ${CI_REGISTRY_IMAGE}/revolution-api:${CI_COMMIT_SHA}"
+      if [ "${CI_COMMIT_BRANCH:-}" = "${CI_DEFAULT_BRANCH:-}" ]; then
+        DESTINATIONS="${DESTINATIONS} --destination ${CI_REGISTRY_IMAGE}/revolution-api:main --destination ${CI_REGISTRY_IMAGE}/revolution-api:${APP_VERSION} --destination ${CI_REGISTRY_IMAGE}/revolution-api:latest"
+      fi
+
+      /kaniko/executor \
+        --context "${CI_PROJECT_DIR}" \
+        --dockerfile "${CI_PROJECT_DIR}/Dockerfile.api" \
+        --target runtime \
+        --cache=true \
+        --cache-repo "${CI_REGISTRY_IMAGE}/build-cache" \
+        --cache-copy-layers \
+        --build-arg EXTRA_CA_CERTS_PEM_B64="${EXTRA_CA_CERTS_PEM_B64:-}" \
+        --build-arg GITLAB_NPM_TOKEN="${GITLAB_NPM_TOKEN:-${CI_JOB_TOKEN:-}}" \
+        --build-arg NODE_BASE_IMAGE="${NODE_BASE_IMAGE}" \
+        ${DESTINATIONS}
+
+build_ui_image:
+  extends: .kaniko_build_template
+  script:
+    - |
+      DESTINATIONS="--destination ${CI_REGISTRY_IMAGE}/revolution-ui:${CI_COMMIT_SHA}"
+      if [ "${CI_COMMIT_BRANCH:-}" = "${CI_DEFAULT_BRANCH:-}" ]; then
+        DESTINATIONS="${DESTINATIONS} --destination ${CI_REGISTRY_IMAGE}/revolution-ui:main --destination ${CI_REGISTRY_IMAGE}/revolution-ui:${APP_VERSION} --destination ${CI_REGISTRY_IMAGE}/revolution-ui:latest"
+      fi
+
+      /kaniko/executor \
+        --context "${CI_PROJECT_DIR}" \
+        --dockerfile "${CI_PROJECT_DIR}/Dockerfile.ui" \
+        --target runtime \
+        --cache=true \
+        --cache-repo "${CI_REGISTRY_IMAGE}/build-cache" \
+        --cache-copy-layers \
+        --build-arg EXTRA_CA_CERTS_PEM_B64="${EXTRA_CA_CERTS_PEM_B64:-}" \
+        --build-arg GITLAB_NPM_TOKEN="${GITLAB_NPM_TOKEN:-${CI_JOB_TOKEN:-}}" \
+        --build-arg NODE_BASE_IMAGE="${NODE_BASE_IMAGE}" \
+        --build-arg NGINX_BASE_IMAGE="${NGINX_BASE_IMAGE}" \
+        --build-arg NODE_OPTIONS="${NODE_OPTIONS:-}" \
+        --build-arg VITE_DOCS_URL="${VITE_DOCS_URL:-/docs}" \
+        ${DESTINATIONS}

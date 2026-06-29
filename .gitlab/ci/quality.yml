@@ -1,0 +1,47 @@
+.node_pnpm_template:
+  image: node:22-alpine
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - api_failure
+      - scheduler_failure
+      - stuck_or_timeout_failure
+      - unknown_failure
+  cache:
+    key:
+      files:
+        - pnpm-lock.yaml
+        - turbo.json
+    paths:
+      - .pnpm-store/
+      - .turbo/cache/
+  before_script:
+    - corepack enable
+    - pnpm config set store-dir .pnpm-store
+    - export GITLAB_NPM_TOKEN="${GITLAB_NPM_TOKEN:-${CI_JOB_TOKEN:-}}"
+    - pnpm install --frozen-lockfile
+
+format_check:
+  stage: test
+  extends: .node_pnpm_template
+  script:
+    - pnpm format:check
+
+lint:
+  stage: test
+  extends: .node_pnpm_template
+  script:
+    - pnpm lint
+
+check:
+  stage: test
+  extends: .node_pnpm_template
+  script:
+    - pnpm check
+
+test:
+  stage: test
+  extends: .node_pnpm_template
+  script:
+    - pnpm test

@@ -1,0 +1,49 @@
+ARG NODE_BASE_IMAGE=node:22-alpine
+FROM ${NODE_BASE_IMAGE} AS base
+
+ENV PNPM_HOME=/pnpm
+ENV PATH=$PNPM_HOME:$PATH
+
+# Optional high-side CA bundle. Pass as build-arg `EXTRA_CA_CERTS_PEM_B64`.
+ARG EXTRA_CA_CERTS_PEM_B64=""
+RUN if [ -n "$EXTRA_CA_CERTS_PEM_B64" ]; then printf '%s' "$EXTRA_CA_CERTS_PEM_B64" > /etc/CertificateAuthorities.pem; else touch /etc/CertificateAuthorities.pem; fi
+ENV NODE_EXTRA_CA_CERTS=/etc/CertificateAuthorities.pem
+
+RUN corepack enable
+
+WORKDIR /workspace
+
+FROM base AS deps
+
+ARG GITLAB_NPM_TOKEN=""
+
+COPY .npmrc pnpm-lock.yaml package.json pnpm-workspace.yaml ./
+COPY apps/revolution-api/package.json apps/revolution-api/package.json
+COPY packages/shared/package.json packages/shared/package.json
+RUN pnpm install --filter @revolution/api... --frozen-lockfile
+
+FROM deps AS tools
+
+COPY apps/revolution-api apps/revolution-api
+COPY packages/shared packages/shared
+
+FROM tools AS build
+
+RUN pnpm --filter @revolution/api build
+
+FROM base AS runtime
+
+ENV NODE_ENV=production
+ARG GITLAB_NPM_TOKEN=""
+
+COPY .npmrc pnpm-lock.yaml package.json pnpm-workspace.yaml ./
+COPY apps/revolution-api/package.json apps/revolution-api/package.json
+COPY packages/shared/package.json packages/shared/package.json
+RUN pnpm install --filter @revolution/api... --prod --frozen-lockfile --ignore-scripts
+COPY --from=build /workspace/apps/revolution-api/dist apps/revolution-api/dist
+
+WORKDIR /workspace/apps/revolution-api
+
+EXPOSE 3000
+
+CMD ["node", "dist/index.js"]
